@@ -1,0 +1,4 @@
+.DS_Store
+
+# Ignore node-gyp output
+build
