@@ -123,23 +123,20 @@ void Get(const FunctionCallbackInfo<Value>& args) {
       record->Set(string(isolate, "icon"), string(isolate, img_path));
     } else if (!pictures.isEmpty()) {
       for (TagLib::ID3v2::FrameList::ConstIterator it = pictures.begin(); it != pictures.end(); it++) {
-        picture_frame = static_cast<TagLib::ID3v2::AttachedPictureFrame *> (*it);
-
-        char ext[3];
-        const char *data  = picture_frame->picture().data();
-        const char *mime  = picture_frame->mimeType().toCString();
-        size_t image_size = picture_frame->picture().size();
-
-        if (strcmp(mime, "image/png") == 0)
-          strcpy(ext, "png");
-        else
-          strcpy(ext, "jpg");
+        picture_frame    = static_cast<TagLib::ID3v2::AttachedPictureFrame *> (*it);
+        const char *mime = picture_frame->mimeType().toCString();
 
         strcat(img_path, ".");
-        strcat(img_path, ext);
+
+        if (strcmp(mime, "image/png") == 0)
+          strcat(img_path, "png");
+        else
+          strcat(img_path, "jpg");
 
         if (!exist(img_path)) {
-          FILE *cover_file = fopen(img_path, "wb");
+          size_t image_size = picture_frame->picture().size();
+          const char *data  = picture_frame->picture().data();
+          FILE *cover_file  = fopen(img_path, "wb");
 
           fwrite(data, image_size, 1, cover_file);
           fclose(cover_file);
