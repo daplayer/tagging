@@ -4,6 +4,7 @@
 #define MAX_PATH_LENGTH 300
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <unistd.h>
 #include <sys/stat.h>
@@ -14,7 +15,7 @@
 #include <taglib/mpegfile.h>
 #include <taglib/id3v2tag.h>
 #include <taglib/id3v2frame.h>
-#include <taglib/Attachedpictureframe.h>
+#include <taglib/attachedpictureframe.h>
 
 using v8::Local;
 using v8::String;
@@ -31,7 +32,7 @@ char* CString(Isolate *isolate, Local<Value> string);
 
 char* CString(Isolate *isolate, Local<Object> hash, char* key);
 
-const char* expand(const char *given_path);
+char* expand(const char *given_path);
 
 void throwException(Isolate *isolate, char* message);
 

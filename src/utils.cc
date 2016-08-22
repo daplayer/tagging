@@ -21,7 +21,7 @@ char* CString(Isolate *isolate, Local<Object> hash, char* key) {
   return CString(isolate, hash->Get(String::NewFromUtf8(isolate, key)));
 }
 
-const char *expand(const char *given_path) {
+char *expand(const char *given_path) {
   int length     = MAX_PATH_LENGTH + 1 + strlen(given_path);
   char *location = (char *)malloc(length * sizeof(char));
   char cwd[MAX_PATH_LENGTH];

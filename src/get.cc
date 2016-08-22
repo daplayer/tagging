@@ -10,9 +10,9 @@ void Get(const FunctionCallbackInfo<Value>& args) {
     return;
   }
 
-  const char *file_name = CString(isolate, args[0]);
-  const char *location  = expand(file_name);
-  char *cover_folder    = nullptr;
+  char *file_name    = CString(isolate, args[0]);
+  char *location     = expand(file_name);
+  char *cover_folder = nullptr;
 
   // Raise if the file actually doesn't exist
   if (!exist(location)) {
