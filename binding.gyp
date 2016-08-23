@@ -13,7 +13,7 @@
           "libraries": ['../deps/lib/libtag-linux-x86.a']
         }],
         ['OS=="linux"', {
-          "libraries": ['../deps/lib/libtag-linux-x86_64.a']
+          "libraries": ['../deps/lib/libtag-linux-x64.so']
         }]
       ]
     }
