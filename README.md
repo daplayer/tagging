@@ -65,9 +65,8 @@ Actually the name of the file is based on the name of the artist and the album
 or if it is not present, the title.
 
 It is not possible to have access to any sort of Base64 string of the picture's
-data since this is taking too much memory-consuming. You can fork this project
-and change this behavior if storing cover files inside a folder is not what you
-want.
+data since this is taking too much memory. You can fork this project and change
+this behavior if storing cover files inside a folder is not what you want.
 
 The advantage of this technique is that once an audio file has been read once,
 the cover file won't be computed again so it will be faster to extract tags.
