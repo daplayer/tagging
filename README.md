@@ -10,7 +10,7 @@ it out locally or reference a GitHub URL like a branch or a tar-ball:
 
 ~~~json
 {
-  "daplayer-tagging": "https://github.com/daplayer/daplayer-tagging"
+  "daplayer-tagging": "https://github.com/daplayer/tagging"
 }
 ~~~
 
