@@ -9,10 +9,6 @@
           "libraries": ['../deps/lib/libtag-darwin.a'],
         }],
         ['OS=="linux"', {
-          "architecture": "ia32",
-          "libraries": ['../deps/lib/libtag-linux-x86.a']
-        }],
-        ['OS=="linux"', {
           "libraries": ['../deps/lib/libtag-linux-x64.so']
         }]
       ]
