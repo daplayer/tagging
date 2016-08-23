@@ -17,7 +17,7 @@ char* CString(Isolate *isolate, Local<Value> string) {
   return cstring;
 }
 
-char* CString(Isolate *isolate, Local<Object> hash, char* key) {
+char* CString(Isolate *isolate, Local<Object> hash, const char* key) {
   return CString(isolate, hash->Get(String::NewFromUtf8(isolate, key)));
 }
 
@@ -39,7 +39,7 @@ char *expand(const char *given_path) {
   return location;
 }
 
-void throwException(Isolate *isolate, char* message) {
+void throwException(Isolate *isolate, const char* message) {
   isolate->ThrowException(Exception::TypeError(string(isolate, message)));
 }
 

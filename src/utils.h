@@ -30,11 +30,11 @@ Local<String> string(Isolate *isolate, const char *string);
 
 char* CString(Isolate *isolate, Local<Value> string);
 
-char* CString(Isolate *isolate, Local<Object> hash, char* key);
+char* CString(Isolate *isolate, Local<Object> hash, const char* key);
 
 char* expand(const char *given_path);
 
-void throwException(Isolate *isolate, char* message);
+void throwException(Isolate *isolate, const char* message);
 
 bool exist(const char* given_path);
 
