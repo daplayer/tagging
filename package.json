@@ -1,0 +1,8 @@
+{
+  "name": "daplayer-tagging",
+  "description": "Wrapper around TagLib to read audio tags",
+  "license": "MPL",
+  "version": "1.0.0",
+  "main": "./lib/daplayer-tagging.js",
+  "gypfile": true
+}
