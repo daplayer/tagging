@@ -147,7 +147,7 @@ void Get(const FunctionCallbackInfo<Value>& args) {
     }
   }
 
-  record->Set(string(isolate, "duration"), Number::New(isolate, mp3_file.audioProperties()->lengthInSeconds()));
+  record->Set(string(isolate, "duration"), Number::New(isolate, mp3_file.audioProperties()->length()));
 
   args.GetReturnValue().Set(record);
 }
