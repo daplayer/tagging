@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-#include <node.h>
+#include <nan.h>
 
 #include <taglib/tag.h>
 #include <taglib/mpegfile.h>
@@ -24,17 +24,11 @@ using v8::Isolate;
 using v8::Value;
 using v8::Exception;
 
-Local<String> string(Isolate *isolate, TagLib::String string);
+Local<String> string(const char *string);
 
-Local<String> string(Isolate *isolate, const char *string);
-
-char* CString(Isolate *isolate, Local<Value> string);
-
-char* CString(Isolate *isolate, Local<Object> hash, const char* key);
+char* CString(Local<Object> hash, const char* key);
 
 char* expand(const char *given_path);
-
-void throwException(Isolate *isolate, const char* message);
 
 bool exist(const char* given_path);
 

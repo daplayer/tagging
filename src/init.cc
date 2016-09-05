@@ -2,8 +2,10 @@
 #include "set.h"
 
 void init(Local<Object> exports) {
-  NODE_SET_METHOD(exports, "get", Get);
-  NODE_SET_METHOD(exports, "set", Set);
+  exports->Set(Nan::New("get").ToLocalChecked(),
+               Nan::New<v8::FunctionTemplate>(Get)->GetFunction());
+  exports->Set(Nan::New("set").ToLocalChecked(),
+               Nan::New<v8::FunctionTemplate>(Set)->GetFunction());
 }
 
 NODE_MODULE(tagging, init)

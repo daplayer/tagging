@@ -1,24 +1,18 @@
 #include "utils.h"
 
-Local<String> string(Isolate *isolate, TagLib::String string) {
-  return String::NewFromUtf8(isolate, string.toCString());
+Local<String> string(const char *cstring) {
+  return Nan::New(cstring).ToLocalChecked();
 }
 
-Local<String> string(Isolate *isolate, const char *string) {
-  return String::NewFromUtf8(isolate, string);
-}
-
-char* CString(Isolate *isolate, Local<Value> string) {
-  String::Utf8Value original(string);
-  char *cstring = (char *)malloc(original.length() + 1);
-
-  strcpy(cstring, *original);
+char* CString(Local<Value> string) {
+  Nan::Utf8String original(string);
+  char *cstring = *original;
 
   return cstring;
 }
 
-char* CString(Isolate *isolate, Local<Object> hash, const char* key) {
-  return CString(isolate, hash->Get(String::NewFromUtf8(isolate, key)));
+char* CString(Local<Object> hash, const char* key) {
+  return CString(hash->Get(string(key)));
 }
 
 char *expand(const char *given_path) {
@@ -37,10 +31,6 @@ char *expand(const char *given_path) {
   }
 
   return location;
-}
-
-void throwException(Isolate *isolate, const char* message) {
-  isolate->ThrowException(Exception::TypeError(string(isolate, message)));
 }
 
 bool exist(const char* given_path) {

@@ -4,5 +4,8 @@
   "license": "MPL",
   "version": "1.0.0",
   "main": "./lib/daplayer-tagging.js",
-  "gypfile": true
+  "gypfile": true,
+  "dependencies": {
+    "nan": "^2.4.0"
+  }
 }

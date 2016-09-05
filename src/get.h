@@ -6,9 +6,8 @@
 #include <taglib/fileref.h>
 #include <taglib/tpropertymap.h>
 
-using v8::FunctionCallbackInfo;
 using v8::Number;
 
-void Get(const FunctionCallbackInfo<Value>& args);
+void Get(const Nan::FunctionCallbackInfo<Value>& args);
 
 #endif

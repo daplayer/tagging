@@ -1,27 +1,20 @@
 #include "get.h"
 
-void Get(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate     = args.GetIsolate();
-  Local<Object> record = Object::New(isolate);
+void Get(const Nan::FunctionCallbackInfo<Value>& args) {
+  Local<Object> record = Nan::New<Object>();
 
   // Ensure that we have at least the file's location
-  if (args.Length() == 0) {
-    throwException(isolate, "Wrong number of arguments");
-    return;
-  }
+  if (args.Length() == 0)
+    return Nan::ThrowRangeError("Wrong number of arguments");
 
-  char *file_name    = CString(isolate, args[0]);
-  char *location     = expand(file_name);
-  char *cover_folder = nullptr;
+  Nan::Utf8String v8_file_name(args[0]);
+
+  char *file_name = *v8_file_name;
+  char *location  = expand(file_name);
 
   // Raise if the file actually doesn't exist
-  if (!exist(location)) {
-    throwException(isolate, "The audio file doesn't exist");
-    return;
-  }
-
-  if (args.Length() > 1)
-    cover_folder = CString(isolate, args[1]);
+  if (!exist(location))
+    return Nan::ThrowError("The audio file doesn't exist");
 
   TagLib::FileRef f(location);
   TagLib::Tag *tag = f.tag();
@@ -60,12 +53,12 @@ void Get(const FunctionCallbackInfo<Value>& args) {
     title[i++] = '\0';
   }
 
-  record->Set(string(isolate, "title"),  string(isolate, title));
-  record->Set(string(isolate, "artist"), string(isolate, tartist));
-  record->Set(string(isolate, "album"),  string(isolate, talbum));
-  record->Set(string(isolate, "genre"),  string(isolate, tgenre));
-  record->Set(string(isolate, "id"),     string(isolate, location));
-  record->Set(string(isolate, "track"),  Number::New(isolate, tag->track()));
+  record->Set(string("title"),    string(title));
+  record->Set(string("artist"),   string(tartist.toCString()));
+  record->Set(string("album"),    string(talbum.toCString()));
+  record->Set(string("genre"),    string(tgenre.toCString()));
+  record->Set(string("id"),       string(location));
+  record->Set(string("track"),    Nan::New(tag->track()));
 
   TagLib::MPEG::File mp3_file(location);
   TagLib::ID3v2::Tag *mp3_tag = mp3_file.ID3v2Tag(true);
@@ -73,6 +66,8 @@ void Get(const FunctionCallbackInfo<Value>& args) {
   TagLib::ID3v2::AttachedPictureFrame *picture_frame;
 
   if (args.Length() > 1) {
+    Nan::Utf8String v8_cover_folder(args[1]);
+    char *cover_folder = *v8_cover_folder;
     const char *album  = talbum.toCString();
     const char *artist = tartist.toCString();
 
@@ -120,7 +115,7 @@ void Get(const FunctionCallbackInfo<Value>& args) {
     img_path[position] = '\0';
 
     if (image_exist(img_path)) {
-      record->Set(string(isolate, "icon"), string(isolate, img_path));
+      record->Set(string("icon"), string(img_path));
     } else if (!pictures.isEmpty()) {
       for (TagLib::ID3v2::FrameList::ConstIterator it = pictures.begin(); it != pictures.end(); it++) {
         picture_frame    = static_cast<TagLib::ID3v2::AttachedPictureFrame *> (*it);
@@ -142,12 +137,13 @@ void Get(const FunctionCallbackInfo<Value>& args) {
           fclose(cover_file);
         }
 
-        record->Set(string(isolate, "icon"), string(isolate, img_path));
+        record->Set(string("icon"), string(img_path));
       }
     }
   }
 
-  record->Set(string(isolate, "duration"), Number::New(isolate, mp3_file.audioProperties()->length()));
+  record->Set(string("duration"), Nan::New(mp3_file.audioProperties()->length()));
+
 
   args.GetReturnValue().Set(record);
 }
