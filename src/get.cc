@@ -18,6 +18,7 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
 
   TagLib::FileRef f(location);
   TagLib::Tag *tag = f.tag();
+  TagLib::AudioProperties *properties = f.audioProperties();
 
   char *title = (char*)malloc(strlen(location) * sizeof(char));
 
@@ -59,11 +60,7 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
   record->Set(string("genre"),    string(tgenre.toCString()));
   record->Set(string("id"),       string(location));
   record->Set(string("track"),    Nan::New(tag->track()));
-
-  TagLib::MPEG::File mp3_file(location);
-  TagLib::ID3v2::Tag *mp3_tag = mp3_file.ID3v2Tag(true);
-  TagLib::ID3v2::FrameList pictures = mp3_tag->frameList("APIC");
-  TagLib::ID3v2::AttachedPictureFrame *picture_frame;
+  record->Set(string("duration"), Nan::New(properties->length()));
 
   if (args.Length() > 1) {
     Nan::Utf8String v8_cover_folder(args[1]);
@@ -71,12 +68,12 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
     const char *album  = talbum.toCString();
     const char *artist = tartist.toCString();
 
-    // //   1 ('/')
-    // // + 3 (" - ")
-    // // + 1 ('.')
-    // // + 3 ("png" or "jpg")
-    // // + 1 ('\0')
-    // // = 9
+    //   1 ('/')
+    // + 3 (" - ")
+    // + 1 ('.')
+    // + 3 ("png" or "jpg")
+    // + 1 ('\0')
+    // = 9
     char img_path[strlen(cover_folder) + strlen(artist)
                 + strlen(strlen(album) ? album : title) + 9];
 
@@ -116,34 +113,78 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
 
     if (image_exist(img_path)) {
       record->Set(string("icon"), string(img_path));
-    } else if (!pictures.isEmpty()) {
-      for (TagLib::ID3v2::FrameList::ConstIterator it = pictures.begin(); it != pictures.end(); it++) {
-        picture_frame    = static_cast<TagLib::ID3v2::AttachedPictureFrame *> (*it);
-        const char *mime = picture_frame->mimeType().toCString();
+    } else {
+      char extension[] = {file_name[strlen(file_name - 3)],
+                          file_name[strlen(file_name - 2)],
+                          file_name[strlen(file_name - 1)], '\0'
+                         };
 
-        strcat(img_path, ".");
-
-        if (strcmp(mime, "image/png") == 0)
-          strcat(img_path, "png");
-        else
-          strcat(img_path, "jpg");
-
-        if (!exist(img_path)) {
-          size_t image_size = picture_frame->picture().size();
-          const char *data  = picture_frame->picture().data();
-          FILE *cover_file  = fopen(img_path, "wb");
-
-          fwrite(data, image_size, 1, cover_file);
-          fclose(cover_file);
-        }
-
-        record->Set(string("icon"), string(img_path));
-      }
+      if (strcmp(extension, "mp3"))
+        mp3Picture(location, img_path, record);
+      else if (strcmp(extension, "m4a"))
+        mp4Picture(location, img_path, record);
     }
   }
 
-  record->Set(string("duration"), Nan::New(mp3_file.audioProperties()->length()));
-
-
   args.GetReturnValue().Set(record);
+}
+
+void mp3Picture(char* location, char *img_path, Local<Object> record) {
+  TagLib::MPEG::File mp3_file(location);
+  TagLib::ID3v2::Tag *mp3_tag = mp3_file.ID3v2Tag(true);
+  TagLib::ID3v2::FrameList pictures = mp3_tag->frameList("APIC");
+
+  if (pictures.isEmpty())
+    return;
+
+  TagLib::ID3v2::AttachedPictureFrame *picture_frame;
+
+  for (TagLib::ID3v2::FrameList::ConstIterator it = pictures.begin(); it != pictures.end(); it++) {
+    picture_frame    = static_cast<TagLib::ID3v2::AttachedPictureFrame *> (*it);
+    const char *mime = picture_frame->mimeType().toCString();
+
+    strcat(img_path, ".");
+
+    if (strcmp(mime, "image/png") == 0)
+      strcat(img_path, "png");
+    else
+      strcat(img_path, "jpg");
+
+    if (!exist(img_path)) {
+      size_t image_size = picture_frame->picture().size();
+      const char *data  = picture_frame->picture().data();
+      FILE *cover_file  = fopen(img_path, "wb");
+
+      fwrite(data, image_size, 1, cover_file);
+      fclose(cover_file);
+    }
+
+    record->Set(string("icon"), string(img_path));
+  }
+}
+
+void mp4Picture(char *location, char *img_path, Local<Object> record) {
+  TagLib::MP4::File mp4_file(location);
+  TagLib::MP4::Tag *mp4_tag = mp4_file.tag();
+  TagLib::MP4::ItemListMap items_list_map = mp4_tag->itemListMap();
+  TagLib::MP4::Item cover_item = items_list_map["covr"];
+  TagLib::MP4::CoverArtList covert_art_list = cover_item.toCoverArtList();
+
+  if (covert_art_list.isEmpty())
+    return;
+
+  TagLib::MP4::CoverArt cover_art = covert_art_list.front();
+
+  strcat(img_path, ".jpg");
+
+  if (!exist(img_path)) {
+    size_t image_size = cover_art.data().size();
+    const char *data  = cover_art.data().data();
+    FILE *cover_file  = fopen(img_path, "wb");
+
+    fwrite(data, image_size, 1, cover_file);
+    fclose(cover_file);
+  }
+
+  record->Set(string("icon"), string(img_path));
 }

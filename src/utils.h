@@ -13,6 +13,7 @@
 
 #include <taglib/tag.h>
 #include <taglib/mpegfile.h>
+#include <taglib/mp4file.h>
 #include <taglib/id3v2tag.h>
 #include <taglib/id3v2frame.h>
 #include <taglib/attachedpictureframe.h>
