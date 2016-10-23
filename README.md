@@ -21,6 +21,10 @@ Then run `npm install` to download it.
 This library reads and set tags in a synchronous way. It comes with two
 handy methods: `get` and `set`.
 
+**Important note**: This project is usable in any of your project but since it's
+mainly intented to be used inside DaPlayer, it can only deal with absolute paths
+so don't expect it to automatically expand paths such as `../folder/audio.mp3`.
+
 ### Getting audio tags
 
 Reading audio tags is fairly easy, you just need to rely on the `get` method
@@ -29,43 +33,46 @@ and pass it a path to an audio file, like:
 ~~~javascript
 const Tagging = require('daplayer-tagging');
 
-console.log(Tagging.get('/path/to/audio/file.mp3'));
-// { title: 'Maliblue',
-//  artist: 'Darius',
-//  album: 'Velour',
-//  genre: 'Electronic',
-//  id: '/path/to/audio/file.mp3',
-//  track: 4,
-//  duration: 259 }
+Tagging.get('/path/to/audio/file.mp3');
+
+// Will produce:
+
+{ title: 'Maliblue',
+  artist: 'Darius',
+  album: 'Velour',
+  genre: 'Electronic',
+  id: '/path/to/audio/file.mp3',
+  track: 4,
+  duration: 259 }
 ~~~
 
 The `id` field actually refers to the given path; this is a cheap way to have
-an unique identifier for each of your record.
-
-If you pass a relative path to this method, an absolute path will be computed
-based on the current execution location.
+an unique identifier for each record.
 
 It is also possible to get the cover image of an audio file passing a path to
 a folder which will contain it. Then the `icon` field of the returned object
 will be filled with the path to the picture.
 
 ~~~javascript
-console.log(Tagging.get('/path/to/audio/file.mp3', '/path/to/cover/folder'));
-// { title: 'Maliblue',
-//  artist: 'Darius',
-//  album: 'Velour',
-//  genre: 'Electronic',
-//  id: '/path/to/audio/file.mp3',
-//  track: 4,
-//  icon: '/path/to/cover/folder/Darius - Velour.jpg',
-//  duration: 259 }
+Tagging.get('/path/to/audio/file.mp3', '/path/to/cover/folder');
+
+// Will produce:
+
+{ title: 'Maliblue',
+  artist: 'Darius',
+  album: 'Velour',
+  genre: 'Electronic',
+  id: '/path/to/audio/file.mp3',
+  track: 4,
+  icon: '/path/to/cover/folder/Darius - Velour.jpg',
+  duration: 259 }
 ~~~
 
 Actually the name of the file is based on the name of the artist and the album
 or if it is not present, the title.
 
 It is not possible to have access to any sort of Base64 string of the picture's
-data since this is taking too much memory. You can fork this project and change
+data since this would take too much memory. You can fork this project and change
 this behavior if storing cover files inside a folder is not what you want.
 
 The advantage of this technique is that once an audio file has been read once,
@@ -92,6 +99,20 @@ Tagging.set('/path/to/audio/file.mp3', {
   icon:   '/path/to/image.jpg'
 });
 ~~~
+
+## Contributing
+
+Contributing to this project is fairly easy. To set it up, you are done with the
+following steps:
+
+~~~
+$ git clone https://github.com/daplayer/tagging
+$ cd daplayer-tagging
+$ npm install
+$ make
+~~~
+
+`make` will actually compile the project and run all the tests.
 
 ## License
 
