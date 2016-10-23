@@ -1,8 +1,6 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#define MAX_PATH_LENGTH 300
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -28,8 +26,6 @@ using v8::Exception;
 Local<String> string(const char *string);
 
 char* CString(Local<Object> hash, const char* key);
-
-char* expand(const char *given_path);
 
 bool exist(const char* given_path);
 

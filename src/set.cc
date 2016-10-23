@@ -8,11 +8,10 @@ void Set(const Nan::FunctionCallbackInfo<Value>& args) {
 
   Nan::Utf8String v8_file_name(args[0]);
 
-  const char *file_name  = *v8_file_name;
-  const char *location   = expand(file_name);
-  const char extension[] = {file_name[strlen(file_name) - 3],
-                            file_name[strlen(file_name) - 2],
-                            file_name[strlen(file_name) - 1]};
+  const char *location = *v8_file_name;
+  const char extension[] = {location[strlen(location) - 3],
+                            location[strlen(location) - 2],
+                            location[strlen(location) - 1]};
   Local<Object> hash     = args[1]->ToObject();
 
 
@@ -38,8 +37,7 @@ void Set(const Nan::FunctionCallbackInfo<Value>& args) {
 
   // Set the attached picture
   if (hash->Has(string("icon"))) {
-    const char *img_name     = CString(hash, "icon");
-    const char *img_location = expand(img_name);
+    const char *img_location = CString(hash, "icon");
 
     if (!exist(img_location)) {
       Nan::ThrowError("The given artwork path doesn't exist");

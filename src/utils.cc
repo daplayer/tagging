@@ -15,24 +15,6 @@ char* CString(Local<Object> hash, const char* key) {
   return CString(hash->Get(string(key)));
 }
 
-char *expand(const char *given_path) {
-  int length     = MAX_PATH_LENGTH + 1 + strlen(given_path);
-  char *location = (char *)malloc(length * sizeof(char));
-  char cwd[MAX_PATH_LENGTH];
-
-  if (given_path[0] != '/') {
-    getcwd(cwd, MAX_PATH_LENGTH);
-
-    strcpy(location, cwd);
-    strcat(location, "/");
-    strcat(location, given_path);
-  } else {
-    strcpy(location, given_path);
-  }
-
-  return location;
-}
-
 bool exist(const char* given_path) {
   struct stat buffer;
 

@@ -21,10 +21,6 @@ describe('Tagging', () => {
         }, /Wrong number of arguments/);
       });
 
-      it('should accept relative paths', () => {
-        Tagging.set('test/fixtures/to_tag.mp3', {});
-      });
-
       it('should accept absolute paths', () => {
         Tagging.set(path.join(__dirname, 'fixtures/to_tag.mp3'), {});
       });

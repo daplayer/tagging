@@ -9,8 +9,7 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
 
   Nan::Utf8String v8_file_name(args[0]);
 
-  char *file_name = *v8_file_name;
-  char *location  = expand(file_name);
+  char *location = *v8_file_name;
 
   // Raise if the file actually doesn't exist
   if (!exist(location))
@@ -114,9 +113,9 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
     if (image_exist(img_path)) {
       record->Set(string("icon"), string(img_path));
     } else {
-      char extension[] = {file_name[strlen(file_name - 3)],
-                          file_name[strlen(file_name - 2)],
-                          file_name[strlen(file_name - 1)], '\0'
+      char extension[] = {location[strlen(location - 3)],
+                          location[strlen(location - 2)],
+                          location[strlen(location - 1)], '\0'
                          };
 
       if (strcmp(extension, "mp3"))

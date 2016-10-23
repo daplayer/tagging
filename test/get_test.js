@@ -9,12 +9,6 @@ describe('Tagging', () => {
         });
       });
 
-      it('should accept relative paths', () => {
-        assert.doesNotThrow(() => {
-          Tagging.get('test/fixtures/tagged.mp3');
-        });
-      });
-
       it('should take at least one argument', () => {
         assert.throws(() => {
           Tagging.get();
