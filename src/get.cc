@@ -137,14 +137,16 @@ void mp3Picture(std::string location, std::string img_path, Local<Object> record
 void mp4Picture(std::string location, std::string img_path, Local<Object> record) {
   TagLib::MP4::File mp4_file(location.c_str());
   TagLib::MP4::Tag *mp4_tag = mp4_file.tag();
-  TagLib::MP4::ItemListMap items_list_map = mp4_tag->itemListMap();
-  TagLib::MP4::Item cover_item = items_list_map["covr"];
-  TagLib::MP4::CoverArtList covert_art_list = cover_item.toCoverArtList();
+
+  if (!mp4_tag->contains("covr"))
+    return;
+
+  TagLib::MP4::CoverArtList covert_art_list = mp4_tag->item("covr").toCoverArtList();
 
   if (covert_art_list.isEmpty())
     return;
 
-  TagLib::MP4::CoverArt cover_art = covert_art_list.front();
+  TagLib::MP4::CoverArt cover_art = covert_art_list[0];
 
   img_path.append(".jpg");
 
