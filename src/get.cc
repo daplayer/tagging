@@ -9,63 +9,46 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
 
   Nan::Utf8String v8_file_name(args[0]);
 
-  char *location = *v8_file_name;
+  std::string location = std::string(*v8_file_name);
 
   // Raise if the file actually doesn't exist
   if (!exist(location))
     return Nan::ThrowError("The audio file doesn't exist");
 
-  TagLib::FileRef f(location);
+  TagLib::FileRef f(location.c_str());
   TagLib::Tag *tag = f.tag();
   TagLib::AudioProperties *properties = f.audioProperties();
 
-  char *title = (char*)malloc(strlen(location) * sizeof(char));
+  TagLib::String title  = tag->title();
+  TagLib::String artist = tag->artist();
+  TagLib::String album  = tag->album();
+  TagLib::String genre  = tag->genre();
 
-  TagLib::String tartist = tag->artist();
-  TagLib::String talbum  = tag->album();
-  TagLib::String tgenre  = tag->genre();
+  // std::string title;
 
   // Set the default title based on the file's location
   // if there's no tags for the file.
-  if (tag->title().length() > 0) {
-    strcpy(title, tag->title().toCString());
-  } else {
-    char *slash = strchr(location, '/');
-    char *dot   = strchr(location, '.');
+  if (!title.length()) {
+    std::string::size_type slash  = location.rfind('/');
+    std::string::size_type dot    = location.rfind('.');
 
-    size_t s, d, i = 0;
+    std::string default_title = location.substr(slash+1, dot - slash - 1);
 
-    // Find the position of the last slash (i.e. where the file name begins)
-    while (slash != NULL) {
-      s     = slash - location;
-      slash = strchr(slash+1, '/');
-    }
-
-    // Find the position of the last dot (i.e. the extension)
-    while (dot != NULL) {
-      d   = dot - location;
-      dot = strchr(dot+1, '.');
-    }
-
-    // Copy the actual file name
-    for (s++; s < d; s++, i++)
-      title[i] = location[s];
-    title[i++] = '\0';
+    for (std::string::iterator it = default_title.begin(); it != default_title.end(); it++)
+      title += *it;
   }
 
-  record->Set(string("title"),    string(title));
-  record->Set(string("artist"),   string(tartist.toCString()));
-  record->Set(string("album"),    string(talbum.toCString()));
-  record->Set(string("genre"),    string(tgenre.toCString()));
+  record->Set(string("title"),    string(title.toCString()));
+  record->Set(string("artist"),   string(artist.toCString()));
+  record->Set(string("album"),    string(album.toCString()));
+  record->Set(string("genre"),    string(genre.toCString()));
   record->Set(string("id"),       string(location));
   record->Set(string("track"),    Nan::New(tag->track()));
   record->Set(string("duration"), Nan::New(properties->length()));
 
   if (args.Length() > 1) {
     Nan::Utf8String v8_cover_folder(args[1]);
-    char *cover_folder = *v8_cover_folder;
-    const char *album  = talbum.toCString();
-    const char *artist = tartist.toCString();
+    std::string cover_folder = std::string(*v8_cover_folder);
 
     //   1 ('/')
     // + 3 (" - ")
@@ -73,54 +56,46 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
     // + 3 ("png" or "jpg")
     // + 1 ('\0')
     // = 9
-    char img_path[strlen(cover_folder) + strlen(artist)
-                + strlen(strlen(album) ? album : title) + 9];
+    std::string img_path;
+    img_path.reserve(cover_folder.length() + artist.length() + 9 +
+                     album.length() ? album.length() : title.length());
 
-    strcpy(img_path, cover_folder);
-    strcat(img_path, "/");
-
-    int position = strlen(cover_folder) + 1;
+    img_path.append(cover_folder);
+    img_path += '/';
 
     // Copy the name of the artist making sure that we are
     // only copying alpha-numeric chars in order to avoid
     // any filesystem errors creating the file.
-    if (strlen(artist) > 0) {
-      for (size_t i = 0; i < strlen(artist); i++) {
-        if (isalnum(artist[i]) || artist[i] == ' ')
-          img_path[position++] = artist[i];
+    if (artist.length()) {
+      for (TagLib::String::Iterator it = artist.begin(); it != artist.end(); it++) {
+        if (isalnum(*it) || isspace(*it))
+          img_path += *it;
       }
 
-      img_path[position++] = ' ';
-      img_path[position++] = '-';
-      img_path[position++] = ' ';
+      img_path.append(" - ");
     }
 
     // Ditto `artist` but for the album or the title variable;
     // we only want the alpha-numeric chars.
-    if (strlen(album) > 0)
-      for (size_t i = 0; i < strlen(album); i++) {
-        if (isalnum(album[i]) || album[i] == ' ')
-          img_path[position++] = album[i];
+    if (album.size())
+      for (TagLib::String::Iterator it = album.begin(); it != album.end(); it++) {
+        if (isalnum(*it) || isspace(*it))
+          img_path += *it;
       }
     else
-      for (size_t i = 0; i < strlen(title); i++) {
-        if (isalnum(title[i]) || title[i] == ' ')
-          img_path[position++] = title[i];
+      for (TagLib::String::Iterator it = title.begin(); it != title.end(); it++) {
+        if (isalnum(*it) || isspace(*it))
+          img_path += *it;
       }
 
-    img_path[position] = '\0';
-
-    if (image_exist(img_path)) {
-      record->Set(string("icon"), string(img_path));
+    if (image_exist(&img_path)) {
+      record->Set(string("icon"), string(img_path.c_str()));
     } else {
-      char extension[] = {location[strlen(location - 3)],
-                          location[strlen(location - 2)],
-                          location[strlen(location - 1)], '\0'
-                         };
+      std::string extension = location.substr(location.length() - 3, 3);
 
-      if (strcmp(extension, "mp3"))
+      if (extension == "mp3")
         mp3Picture(location, img_path, record);
-      else if (strcmp(extension, "m4a"))
+      else if (extension == "m4a")
         mp4Picture(location, img_path, record);
     }
   }
@@ -128,8 +103,8 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
   args.GetReturnValue().Set(record);
 }
 
-void mp3Picture(char* location, char *img_path, Local<Object> record) {
-  TagLib::MPEG::File mp3_file(location);
+void mp3Picture(std::string location, std::string img_path, Local<Object> record) {
+  TagLib::MPEG::File mp3_file(location.c_str());
   TagLib::ID3v2::Tag *mp3_tag = mp3_file.ID3v2Tag(true);
   TagLib::ID3v2::FrameList pictures = mp3_tag->frameList("APIC");
 
@@ -139,20 +114,17 @@ void mp3Picture(char* location, char *img_path, Local<Object> record) {
   TagLib::ID3v2::AttachedPictureFrame *picture_frame;
 
   for (TagLib::ID3v2::FrameList::ConstIterator it = pictures.begin(); it != pictures.end(); it++) {
-    picture_frame    = static_cast<TagLib::ID3v2::AttachedPictureFrame *> (*it);
-    const char *mime = picture_frame->mimeType().toCString();
+    picture_frame = static_cast<TagLib::ID3v2::AttachedPictureFrame *> (*it);
 
-    strcat(img_path, ".");
-
-    if (strcmp(mime, "image/png") == 0)
-      strcat(img_path, "png");
+    if (picture_frame->mimeType() == "image/png")
+      img_path.append(".png");
     else
-      strcat(img_path, "jpg");
+      img_path.append(".jpg");
 
     if (!exist(img_path)) {
       size_t image_size = picture_frame->picture().size();
       const char *data  = picture_frame->picture().data();
-      FILE *cover_file  = fopen(img_path, "wb");
+      FILE *cover_file  = fopen(img_path.c_str(), "wb");
 
       fwrite(data, image_size, 1, cover_file);
       fclose(cover_file);
@@ -162,8 +134,8 @@ void mp3Picture(char* location, char *img_path, Local<Object> record) {
   }
 }
 
-void mp4Picture(char *location, char *img_path, Local<Object> record) {
-  TagLib::MP4::File mp4_file(location);
+void mp4Picture(std::string location, std::string img_path, Local<Object> record) {
+  TagLib::MP4::File mp4_file(location.c_str());
   TagLib::MP4::Tag *mp4_tag = mp4_file.tag();
   TagLib::MP4::ItemListMap items_list_map = mp4_tag->itemListMap();
   TagLib::MP4::Item cover_item = items_list_map["covr"];
@@ -174,12 +146,12 @@ void mp4Picture(char *location, char *img_path, Local<Object> record) {
 
   TagLib::MP4::CoverArt cover_art = covert_art_list.front();
 
-  strcat(img_path, ".jpg");
+  img_path.append(".jpg");
 
   if (!exist(img_path)) {
     size_t image_size = cover_art.data().size();
     const char *data  = cover_art.data().data();
-    FILE *cover_file  = fopen(img_path, "wb");
+    FILE *cover_file  = fopen(img_path.c_str(), "wb");
 
     fwrite(data, image_size, 1, cover_file);
     fclose(cover_file);

@@ -8,18 +8,15 @@ void Set(const Nan::FunctionCallbackInfo<Value>& args) {
 
   Nan::Utf8String v8_file_name(args[0]);
 
-  const char *location = *v8_file_name;
-  const char extension[] = {location[strlen(location) - 3],
-                            location[strlen(location) - 2],
-                            location[strlen(location) - 1]};
-  Local<Object> hash     = args[1]->ToObject();
-
+  std::string location  = std::string(*v8_file_name);
+  std::string extension = location.substr(location.length() - 3, 3);
+  Local<Object> hash    = args[1]->ToObject();
 
   // Raise if the audio file doesn't exist
   if (!exist(location))
     return Nan::ThrowError("The audio file doesn't exist");
 
-  TagLib::FileRef audioFile(location);
+  TagLib::FileRef audioFile(location.c_str());
 
   // Set the basic text attributes like title, etc.
   if (hash->Has(string("title")))
@@ -37,20 +34,20 @@ void Set(const Nan::FunctionCallbackInfo<Value>& args) {
 
   // Set the attached picture
   if (hash->Has(string("icon"))) {
-    const char *img_location = CString(hash, "icon");
+    std::string img_location = std::string(CString(hash, "icon"));
 
     if (!exist(img_location)) {
       Nan::ThrowError("The given artwork path doesn't exist");
       return;
     }
 
-    ImageFile imageFile(img_location);
-    TagLib::MPEG::File mpegFile(location);
+    ImageFile imageFile(img_location.c_str());
+    TagLib::MPEG::File mpegFile(location.c_str());
 
     TagLib::ID3v2::Tag *tag = mpegFile.ID3v2Tag(true);
     TagLib::ID3v2::AttachedPictureFrame *frame = new TagLib::ID3v2::AttachedPictureFrame;
 
-    if (strcmp("png", extension) == 0)
+    if (extension == "png")
       frame->setMimeType("image/png");
     else
       frame->setMimeType("image/jpeg");

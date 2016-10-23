@@ -1,7 +1,7 @@
 #include "utils.h"
 
-Local<String> string(const char *cstring) {
-  return Nan::New(cstring).ToLocalChecked();
+Local<String> string(std::string stdstring) {
+  return Nan::New(stdstring.c_str()).ToLocalChecked();
 }
 
 char* CString(Local<Value> string) {
@@ -24,21 +24,27 @@ bool exist(const char* given_path) {
     return true;
 }
 
-bool image_exist(char* given_path) {
-  char png_path[strlen(given_path) + 4];
-  char jpg_path[strlen(given_path) + 4];
+bool exist(std::string given_path) {
+  return exist(given_path.c_str());
+}
 
-  strcpy(png_path, given_path);
-  strcat(png_path, ".png");
+bool image_exist(std::string *given_path) {
+  std::string png_path, jpg_path;
 
-  strcpy(jpg_path, given_path);
-  strcat(jpg_path, ".jpg");
+  png_path.reserve(given_path->length() + 4);
+  jpg_path.reserve(given_path->length() + 4);
+
+  png_path.append(*given_path);
+  png_path.append(".png");
+
+  jpg_path.append(*given_path);
+  jpg_path.append(".jpg");
 
   if (exist(png_path)) {
-    strcat(given_path, ".png");
+    given_path->append(".png");
     return true;
   } else if (exist(jpg_path)) {
-    strcat(given_path, ".jpg");
+    given_path->append(".jpg");
     return true;
   }
 

@@ -10,8 +10,8 @@ using v8::Number;
 
 void Get(const Nan::FunctionCallbackInfo<Value>& args);
 
-void mp3Picture(char *location, char *img_path, Local<Object> record);
+void mp3Picture(std::string location, std::string img_path, Local<Object> record);
 
-void mp4Picture(char *location, char *img_path, Local<Object> record);
+void mp4Picture(std::string location, std::string img_path, Local<Object> record);
 
 #endif

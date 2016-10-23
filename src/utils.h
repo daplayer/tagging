@@ -2,7 +2,6 @@
 #define UTILS_H
 
 #include <stdlib.h>
-#include <string.h>
 
 #include <unistd.h>
 #include <sys/stat.h>
@@ -23,12 +22,12 @@ using v8::Isolate;
 using v8::Value;
 using v8::Exception;
 
-Local<String> string(const char *string);
+Local<String> string(std::string stdstring);
 
 char* CString(Local<Object> hash, const char* key);
 
-bool exist(const char* given_path);
+bool exist(std::string given_path);
 
-bool image_exist(char* given_path);
+bool image_exist(std::string *given_path);
 
 #endif
