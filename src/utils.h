@@ -30,4 +30,6 @@ bool exist(std::string given_path);
 
 bool image_exist(std::string *given_path);
 
+void copy(TagLib::String str, std::string *dest);
+
 #endif

@@ -50,3 +50,10 @@ bool image_exist(std::string *given_path) {
 
   return false;
 }
+
+void copy(TagLib::String str, std::string *dest) {
+  for (TagLib::String::Iterator it = str.begin(); it != str.end(); it++) {
+    if (isalnum(*it) || isspace(*it))
+      *dest += *it;
+  }
+}

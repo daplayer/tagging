@@ -75,30 +75,15 @@ Local<Object> tags(std::string location, std::string cover_folder) {
     img_path.append(cover_folder);
     img_path += '/';
 
-    // Copy the name of the artist making sure that we are
-    // only copying alpha-numeric chars in order to avoid
-    // any filesystem errors creating the file.
+    // Copy the artist, the album (or the title if not present)
+    // stripping out non alpha-numeric characters.
     if (artist.length()) {
-      for (TagLib::String::Iterator it = artist.begin(); it != artist.end(); it++) {
-        if (isalnum(*it) || isspace(*it))
-          img_path += *it;
-      }
+      copy(artist, &img_path);
 
       img_path.append(" - ");
     }
 
-    // Ditto `artist` but for the album or the title variable;
-    // we only want the alpha-numeric chars.
-    if (album.size())
-      for (TagLib::String::Iterator it = album.begin(); it != album.end(); it++) {
-        if (isalnum(*it) || isspace(*it))
-          img_path += *it;
-      }
-    else
-      for (TagLib::String::Iterator it = title.begin(); it != title.end(); it++) {
-        if (isalnum(*it) || isspace(*it))
-          img_path += *it;
-      }
+    copy(album.length() ? album : title, &img_path);
 
     if (image_exist(&img_path)) {
       record->Set(string("icon"), string(img_path.c_str()));
