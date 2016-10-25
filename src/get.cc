@@ -61,43 +61,48 @@ Local<Object> tags(std::string location, std::string cover_folder) {
   record->Set(string("track"),    Nan::New(tag->track()));
   record->Set(string("duration"), Nan::New(properties->length()));
 
-  if (cover_folder.length()) {
-    //   1 ('/')
-    // + 3 (" - ")
-    // + 1 ('.')
-    // + 3 ("png" or "jpg")
-    // + 1 ('\0')
-    // = 9
-    std::string img_path;
-    img_path.reserve(cover_folder.length() + artist.length() + 9 +
-                     album.length() ? album.length() : title.length());
-
-    img_path.append(cover_folder);
-    img_path += '/';
-
-    // Copy the artist, the album (or the title if not present)
-    // stripping out non alpha-numeric characters.
-    if (artist.length()) {
-      copy(artist, &img_path);
-
-      img_path.append(" - ");
-    }
-
-    copy(album.length() ? album : title, &img_path);
-
-    if (image_exist(&img_path)) {
-      record->Set(string("icon"), string(img_path.c_str()));
-    } else {
-      std::string extension = location.substr(location.length() - 3, 3);
-
-      if (extension == "mp3")
-        mp3Picture(location, img_path, record);
-      else if (extension == "m4a")
-        mp4Picture(location, img_path, record);
-    }
-  }
+  if (cover_folder.length())
+    extractPicture(location, cover_folder, title, album, artist, record);
 
   return record;
+}
+
+void inline extractPicture(std::string location,  std::string cover_folder,
+                           TagLib::String title,  TagLib::String album,
+                           TagLib::String artist, Local<Object> record) {
+  //   1 ('/')
+  // + 3 (" - ")
+  // + 1 ('.')
+  // + 3 ("png" or "jpg")
+  // + 1 ('\0')
+  // = 9
+  std::string img_path;
+  img_path.reserve(cover_folder.length() + artist.length() + 9 +
+                   album.length() ? album.length() : title.length());
+
+  img_path.append(cover_folder);
+  img_path += '/';
+
+  // Copy the artist, the album (or the title if not present)
+  // stripping out non alpha-numeric characters.
+  if (artist.length()) {
+    copy(artist, &img_path);
+
+    img_path.append(" - ");
+  }
+
+  copy(album.length() ? album : title, &img_path);
+
+  if (image_exist(&img_path)) {
+    record->Set(string("icon"), string(img_path.c_str()));
+  } else {
+    std::string extension = location.substr(location.length() - 3, 3);
+
+    if (extension == "mp3")
+      mp3Picture(location, img_path, record);
+    else if (extension == "m4a")
+      mp4Picture(location, img_path, record);
+  }
 }
 
 void mp3Picture(std::string location, std::string img_path, Local<Object> record) {
