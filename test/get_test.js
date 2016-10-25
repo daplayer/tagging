@@ -5,7 +5,7 @@ describe('Tagging', () => {
     describe('prototype', () => {
       it('should accept absolute paths', () => {
         assert.doesNotThrow(() => {
-          Tagging.get(path.join(__dirname, 'fixtures/tagged.mp3'));
+          Tagging.get([path.join(__dirname, 'fixtures/tagged.mp3')]);
         });
       });
 
@@ -19,12 +19,12 @@ describe('Tagging', () => {
     describe('behavior', () => {
       it('should raise if the audio file does not exist', () => {
         assert.throws(() => {
-          Tagging.get('dummy/path');
+          Tagging.get(['dummy/path']);
         }, /The audio file doesn't exist/);
       });
 
       it('should return the basic tags', () => {
-        var tags = Tagging.get(helpers.fixture('tagged.mp3'));
+        var tags = Tagging.get([helpers.fixture('tagged.mp3')])[0];
 
         assert.equal(tags.artist, 'Darius');
         assert.equal(tags.title, 'Maliblue');
@@ -34,13 +34,13 @@ describe('Tagging', () => {
       });
 
       it('should set the duration', () => {
-        var tags = Tagging.get(helpers.fixture('tagged.mp3'));
+        var tags = Tagging.get([helpers.fixture('tagged.mp3')])[0];
 
         assert.equal(tags.duration, 259);
       });
 
       it('should set the title based on the file name', () => {
-        var tags = Tagging.get(helpers.fixture('raw.mp3'));
+        var tags = Tagging.get([helpers.fixture('raw.mp3')])[0];
 
         assert.equal(tags.title, 'raw');
       });
@@ -58,7 +58,7 @@ describe('Tagging', () => {
       it('should be named based on the name of the artist and of the album', () => {
         var cover_file = helpers.fixture('covers/Darius - Velour.jpg');
 
-        Tagging.get(helpers.fixture('tagged.mp3'), cover_folder);
+        Tagging.get([helpers.fixture('tagged.mp3')], cover_folder);
 
         assert(fs.lstatSync(cover_file).isFile());
       });
@@ -67,13 +67,13 @@ describe('Tagging', () => {
         var cover_file = helpers.fixture('covers/Darius - Velour.jpg');
 
         fs.appendFileSync(cover_file, 'i am a cover lulz', 'utf-8');
-        Tagging.get(helpers.fixture('tagged.mp3'), cover_folder);
+        Tagging.get([helpers.fixture('tagged.mp3')], cover_folder);
 
         assert.equal(fs.readFileSync(cover_file, 'utf-8'), 'i am a cover lulz');
       });
 
       it('should pick the cover file even if there is no picture frame', () => {
-        var tags = Tagging.get(helpers.fixture('without_cover.mp3'), cover_folder);
+        var tags = Tagging.get([helpers.fixture('without_cover.mp3')], cover_folder)[0];
 
         assert.equal(tags.icon, helpers.fixture('covers/Bakermat - Strandfeest.jpg'));
       });

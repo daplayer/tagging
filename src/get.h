@@ -7,8 +7,11 @@
 #include <taglib/tpropertymap.h>
 
 using v8::Number;
+using v8::Array;
 
 void Get(const Nan::FunctionCallbackInfo<Value>& args);
+
+Local<Object> tags(std::string location, std::string cover_folder);
 
 void mp3Picture(std::string location, std::string img_path, Local<Object> record);
 

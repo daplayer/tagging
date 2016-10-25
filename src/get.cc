@@ -1,19 +1,36 @@
 #include "get.h"
 
 void Get(const Nan::FunctionCallbackInfo<Value>& args) {
-  Local<Object> record = Nan::New<Object>();
-
-  // Ensure that we have at least the file's location
   if (args.Length() == 0)
     return Nan::ThrowRangeError("Wrong number of arguments");
 
-  Nan::Utf8String v8_file_name(args[0]);
+  Local<Array> files  = args[0]->ToObject().As<Array>();
+  Local<Array> tagged = Array::New(args.GetIsolate(), files->Length());
 
-  std::string location = std::string(*v8_file_name);
+  std::string cover_folder;
 
-  // Raise if the file actually doesn't exist
-  if (!exist(location))
-    return Nan::ThrowError("The audio file doesn't exist");
+  if (args.Length() > 1) {
+    Nan::Utf8String covers(args[1]);
+    cover_folder = std::string(*covers);
+  } else {
+    cover_folder = "";
+  }
+
+  for (uint32_t i = 0; i < files->Length(); i++) {
+    Nan::Utf8String name(files->Get(i));
+    std::string path = std::string(*name);
+
+    if (!exist(path))
+      return Nan::ThrowError("The audio file doesn't exist");
+
+    tagged->Set(i, tags(path, cover_folder));
+  }
+
+  args.GetReturnValue().Set(tagged);
+}
+
+Local<Object> tags(std::string location, std::string cover_folder) {
+  Local<Object> record = Nan::New<Object>();
 
   TagLib::FileRef f(location.c_str());
   TagLib::Tag *tag = f.tag();
@@ -23,8 +40,6 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
   TagLib::String artist = tag->artist();
   TagLib::String album  = tag->album();
   TagLib::String genre  = tag->genre();
-
-  // std::string title;
 
   // Set the default title based on the file's location
   // if there's no tags for the file.
@@ -46,10 +61,7 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
   record->Set(string("track"),    Nan::New(tag->track()));
   record->Set(string("duration"), Nan::New(properties->length()));
 
-  if (args.Length() > 1) {
-    Nan::Utf8String v8_cover_folder(args[1]);
-    std::string cover_folder = std::string(*v8_cover_folder);
-
+  if (cover_folder.length()) {
     //   1 ('/')
     // + 3 (" - ")
     // + 1 ('.')
@@ -100,7 +112,7 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
     }
   }
 
-  args.GetReturnValue().Set(record);
+  return record;
 }
 
 void mp3Picture(std::string location, std::string img_path, Local<Object> record) {

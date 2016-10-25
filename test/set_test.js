@@ -52,7 +52,7 @@ describe('Tagging', () => {
 
         Tagging.set(helpers.fixture('to_tag.mp3'), defined_tags);
 
-        var read_tags = Tagging.get(helpers.fixture('to_tag.mp3'));
+        var read_tags = Tagging.get([helpers.fixture('to_tag.mp3')])[0];
 
         assert.equal(read_tags.title,  defined_tags.title);
         assert.equal(read_tags.artist, defined_tags.artist);
@@ -81,7 +81,7 @@ describe('Tagging', () => {
           icon: helpers.fixture('cover.jpg')
         });
 
-        Tagging.get(helpers.fixture('to_tag.mp3'), cover_folder);
+        Tagging.get([helpers.fixture('to_tag.mp3')], cover_folder);
 
         try {
           fs.accessSync(helpers.fixture('covers/Cherokee - Take Care of You.jpg'));
