@@ -23,24 +23,32 @@ describe('Tagging', () => {
         }, /The audio file doesn't exist/);
       });
 
-      it('should return the basic tags', () => {
-        var tags = Tagging.get([helpers.fixture('tagged.mp3')])[0];
+      it('should properly return the representation of the library', () => {
+        var tags = Tagging.get([helpers.fixture('tagged.mp3')]);
 
-        assert.equal(tags.artist, 'Darius');
-        assert.equal(tags.title, 'Maliblue');
-        assert.equal(tags.album, 'Velour');
-        assert.equal(tags.genre, 'Electronic');
-        assert.equal(tags.track, 4);
-      });
-
-      it('should set the duration', () => {
-        var tags = Tagging.get([helpers.fixture('tagged.mp3')])[0];
-
-        assert.equal(tags.duration, 259);
+        assert.deepEqual(tags, {
+          artists: {
+            darius: {
+              name: 'Darius',
+              albums: {
+                Velour: [{
+                  artist: 'Darius',
+                  duration: 259,
+                  id: helpers.fixture('tagged.mp3'),
+                  title: 'Maliblue',
+                  track: 4,
+                  genre: 'Electronic'
+                }]
+              },
+              singles: []
+            }
+          },
+          singles: []
+        });
       });
 
       it('should set the title based on the file name', () => {
-        var tags = Tagging.get([helpers.fixture('raw.mp3')])[0];
+        var tags = Tagging.get([helpers.fixture('raw.mp3')]).singles[0];
 
         assert.equal(tags.title, 'raw');
       });
@@ -73,7 +81,7 @@ describe('Tagging', () => {
       });
 
       it('should pick the cover file even if there is no picture frame', () => {
-        var tags = Tagging.get([helpers.fixture('without_cover.mp3')], cover_folder)[0];
+        var tags = Tagging.get([helpers.fixture('without_cover.mp3')], cover_folder).singles[0];
 
         assert.equal(tags.icon, helpers.fixture('covers/Bakermat - Strandfeest.jpg'));
       });

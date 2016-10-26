@@ -52,11 +52,11 @@ describe('Tagging', () => {
 
         Tagging.set(helpers.fixture('to_tag.mp3'), defined_tags);
 
-        var read_tags = Tagging.get([helpers.fixture('to_tag.mp3')])[0];
+        var library   = Tagging.get([helpers.fixture('to_tag.mp3')]);
+        var read_tags = library.artists.cherokee.albums['Take Care of You'][0];
 
         assert.equal(read_tags.title,  defined_tags.title);
         assert.equal(read_tags.artist, defined_tags.artist);
-        assert.equal(read_tags.album,  defined_tags.album);
         assert.equal(read_tags.track,  defined_tags.track);
         assert.equal(read_tags.genre,  defined_tags.genre);
       });

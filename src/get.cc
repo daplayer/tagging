@@ -4,9 +4,9 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
   if (args.Length() == 0)
     return Nan::ThrowRangeError("Wrong number of arguments");
 
-  Local<Array> files  = args[0]->ToObject().As<Array>();
-  Local<Array> tagged = Array::New(args.GetIsolate(), files->Length());
+  Local<Array> files = args[0]->ToObject().As<Array>();
 
+  Library library;
   std::string cover_folder;
 
   if (args.Length() > 1) {
@@ -23,13 +23,13 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
     if (!exist(path))
       return Nan::ThrowError("The audio file doesn't exist");
 
-    tagged->Set(i, tags(path, cover_folder));
+    tags(path, cover_folder, library);
   }
 
-  args.GetReturnValue().Set(tagged);
+  args.GetReturnValue().Set(library.getHash());
 }
 
-Local<Object> tags(std::string location, std::string cover_folder) {
+void tags(std::string location, std::string cover_folder, Library library) {
   Local<Object> record = Nan::New<Object>();
 
   TagLib::FileRef f(location.c_str());
@@ -55,7 +55,6 @@ Local<Object> tags(std::string location, std::string cover_folder) {
 
   record->Set(string("title"),    string(title.toCString()));
   record->Set(string("artist"),   string(artist.toCString()));
-  record->Set(string("album"),    string(album.toCString()));
   record->Set(string("genre"),    string(genre.toCString()));
   record->Set(string("id"),       string(location));
   record->Set(string("track"),    Nan::New(tag->track()));
@@ -64,7 +63,10 @@ Local<Object> tags(std::string location, std::string cover_folder) {
   if (cover_folder.length())
     extractPicture(location, cover_folder, title, album, artist, record);
 
-  return record;
+  if (album.length())
+    library.AddTrack(artist.toCString(), album.toCString(), record);
+  else
+    library.AddSingle(artist.toCString(), record);
 }
 
 void inline extractPicture(std::string location,  std::string cover_folder,

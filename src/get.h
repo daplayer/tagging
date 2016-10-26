@@ -2,6 +2,7 @@
 #define EXTRACT_H
 
 #include "utils.h"
+#include "library.h"
 
 #include <taglib/fileref.h>
 #include <taglib/tpropertymap.h>
@@ -11,7 +12,7 @@ using v8::Array;
 
 void Get(const Nan::FunctionCallbackInfo<Value>& args);
 
-Local<Object> tags(std::string location, std::string cover_folder);
+void tags(std::string location, std::string cover_folder, Library library);
 
 void inline extractPicture(std::string location,  std::string cover_folder,
                            TagLib::String title,  TagLib::String album,

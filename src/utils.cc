@@ -4,6 +4,12 @@ Local<String> string(std::string stdstring) {
   return Nan::New(stdstring.c_str()).ToLocalChecked();
 }
 
+Local<String> downcase(Local<String> original) {
+  return original->ToObject()->Get(string("toLowerCase"))
+                 ->ToObject()->CallAsFunction(original, 0, 0)
+                 .As<String>();
+}
+
 char* CString(Local<Value> string) {
   Nan::Utf8String original(string);
   char *cstring = *original;
