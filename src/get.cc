@@ -1,22 +1,30 @@
 #include "get.h"
 
 void Get(const Nan::FunctionCallbackInfo<Value>& args) {
-  if (args.Length() == 0)
+  const unsigned int argc = args.Length();
+
+  if (argc == 0)
     return Nan::ThrowRangeError("Wrong number of arguments");
 
   Local<Array> files = args[0]->ToObject().As<Array>();
+  Local<Function> callback;
+
+  const unsigned int files_count = files->Length();
 
   Library library;
   std::string cover_folder;
 
-  if (args.Length() > 1) {
+  if (argc > 1) {
     Nan::Utf8String covers(args[1]);
     cover_folder = std::string(*covers);
   } else {
     cover_folder = "";
   }
 
-  for (uint32_t i = 0; i < files->Length(); i++) {
+  if (argc > 2)
+    callback = args[2]->ToObject().As<Function>();
+
+  for (uint32_t i = 0; i < files_count; i++) {
     Nan::Utf8String name(files->Get(i));
     std::string path = std::string(*name);
 
@@ -24,6 +32,11 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
       return Nan::ThrowError("The audio file doesn't exist");
 
     tags(path, cover_folder, library);
+
+    if (argc > 2) {
+      Local<Value> argv[2] = { Nan::New(i+1), Nan::New(files_count) };
+      callback->CallAsFunction(callback, 2, argv);
+    }
   }
 
   args.GetReturnValue().Set(library.getHash());

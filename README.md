@@ -28,7 +28,7 @@ so don't expect it to automatically expand paths such as `../folder/audio.mp3`.
 ### Getting audio tags
 
 Reading audio tags is fairly easy but the returned result may not be what you
-would expect. Actually, the `#get` method takes an array of files and will
+would expect. Actually, the `get` method takes an array of files and will
 automatically build a representation of your library. For example:
 
 ~~~javascript
@@ -103,6 +103,18 @@ this behavior if storing cover files inside a folder is not what you want.
 
 The advantage of this technique is that once an audio file has been read once,
 the cover file won't be computed again so it will be faster to extract tags.
+
+#### Getting feedback
+
+Finally, the `get` method accepts a third argument as a callback to know the
+current progression processing all the given files as this may be long when
+the array gets large. For example:
+
+~~~javascript
+Tagging.get(files, cover_folder, function(index, total) {
+  console.log((index / total) * 100);
+});
+~~~
 
 ### Setting audio tags
 
