@@ -24,10 +24,14 @@ using v8::Exception;
 
 Local<String> string(std::string stdstring);
 
+Local<String> downcase(Local<String> original);
+
 char* CString(Local<Object> hash, const char* key);
 
 bool exist(std::string given_path);
 
 bool image_exist(std::string *given_path);
+
+void copy(TagLib::String str, std::string *dest);
 
 #endif

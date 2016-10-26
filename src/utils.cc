@@ -4,6 +4,12 @@ Local<String> string(std::string stdstring) {
   return Nan::New(stdstring.c_str()).ToLocalChecked();
 }
 
+Local<String> downcase(Local<String> original) {
+  return original->ToObject()->Get(string("toLowerCase"))
+                 ->ToObject()->CallAsFunction(original, 0, 0)
+                 .As<String>();
+}
+
 char* CString(Local<Value> string) {
   Nan::Utf8String original(string);
   char *cstring = *original;
@@ -49,4 +55,11 @@ bool image_exist(std::string *given_path) {
   }
 
   return false;
+}
+
+void copy(TagLib::String str, std::string *dest) {
+  for (TagLib::String::Iterator it = str.begin(); it != str.end(); it++) {
+    if (isalnum(*it) || isspace(*it))
+      *dest += *it;
+  }
 }

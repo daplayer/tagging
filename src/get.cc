@@ -1,19 +1,49 @@
 #include "get.h"
 
 void Get(const Nan::FunctionCallbackInfo<Value>& args) {
-  Local<Object> record = Nan::New<Object>();
+  const unsigned int argc = args.Length();
 
-  // Ensure that we have at least the file's location
-  if (args.Length() == 0)
+  if (argc == 0)
     return Nan::ThrowRangeError("Wrong number of arguments");
 
-  Nan::Utf8String v8_file_name(args[0]);
+  Local<Array> files = args[0]->ToObject().As<Array>();
+  Local<Function> callback;
 
-  std::string location = std::string(*v8_file_name);
+  const unsigned int files_count = files->Length();
 
-  // Raise if the file actually doesn't exist
-  if (!exist(location))
-    return Nan::ThrowError("The audio file doesn't exist");
+  Library library;
+  std::string cover_folder;
+
+  if (argc > 1) {
+    Nan::Utf8String covers(args[1]);
+    cover_folder = std::string(*covers);
+  } else {
+    cover_folder = "";
+  }
+
+  if (argc > 2)
+    callback = args[2]->ToObject().As<Function>();
+
+  for (uint32_t i = 0; i < files_count; i++) {
+    Nan::Utf8String name(files->Get(i));
+    std::string path = std::string(*name);
+
+    if (!exist(path))
+      return Nan::ThrowError("The audio file doesn't exist");
+
+    tags(path, cover_folder, library);
+
+    if (argc > 2) {
+      Local<Value> argv[2] = { Nan::New(i+1), Nan::New(files_count) };
+      callback->CallAsFunction(callback, 2, argv);
+    }
+  }
+
+  args.GetReturnValue().Set(library.getHash());
+}
+
+void tags(std::string location, std::string cover_folder, Library library) {
+  Local<Object> record = Nan::New<Object>();
 
   TagLib::FileRef f(location.c_str());
   TagLib::Tag *tag = f.tag();
@@ -23,8 +53,6 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
   TagLib::String artist = tag->artist();
   TagLib::String album  = tag->album();
   TagLib::String genre  = tag->genre();
-
-  // std::string title;
 
   // Set the default title based on the file's location
   // if there's no tags for the file.
@@ -40,67 +68,56 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
 
   record->Set(string("title"),    string(title.toCString()));
   record->Set(string("artist"),   string(artist.toCString()));
-  record->Set(string("album"),    string(album.toCString()));
   record->Set(string("genre"),    string(genre.toCString()));
   record->Set(string("id"),       string(location));
   record->Set(string("track"),    Nan::New(tag->track()));
   record->Set(string("duration"), Nan::New(properties->length()));
 
-  if (args.Length() > 1) {
-    Nan::Utf8String v8_cover_folder(args[1]);
-    std::string cover_folder = std::string(*v8_cover_folder);
+  if (cover_folder.length())
+    extractPicture(location, cover_folder, title, album, artist, record);
 
-    //   1 ('/')
-    // + 3 (" - ")
-    // + 1 ('.')
-    // + 3 ("png" or "jpg")
-    // + 1 ('\0')
-    // = 9
-    std::string img_path;
-    img_path.reserve(cover_folder.length() + artist.length() + 9 +
-                     album.length() ? album.length() : title.length());
+  if (album.length())
+    library.AddTrack(artist.toCString(), album.toCString(), record);
+  else
+    library.AddSingle(artist.toCString(), record);
+}
 
-    img_path.append(cover_folder);
-    img_path += '/';
+void inline extractPicture(std::string location,  std::string cover_folder,
+                           TagLib::String title,  TagLib::String album,
+                           TagLib::String artist, Local<Object> record) {
+  //   1 ('/')
+  // + 3 (" - ")
+  // + 1 ('.')
+  // + 3 ("png" or "jpg")
+  // + 1 ('\0')
+  // = 9
+  std::string img_path;
+  img_path.reserve(cover_folder.length() + artist.length() + 9 +
+                   album.length() ? album.length() : title.length());
 
-    // Copy the name of the artist making sure that we are
-    // only copying alpha-numeric chars in order to avoid
-    // any filesystem errors creating the file.
-    if (artist.length()) {
-      for (TagLib::String::Iterator it = artist.begin(); it != artist.end(); it++) {
-        if (isalnum(*it) || isspace(*it))
-          img_path += *it;
-      }
+  img_path.append(cover_folder);
+  img_path += '/';
 
-      img_path.append(" - ");
-    }
+  // Copy the artist, the album (or the title if not present)
+  // stripping out non alpha-numeric characters.
+  if (artist.length()) {
+    copy(artist, &img_path);
 
-    // Ditto `artist` but for the album or the title variable;
-    // we only want the alpha-numeric chars.
-    if (album.size())
-      for (TagLib::String::Iterator it = album.begin(); it != album.end(); it++) {
-        if (isalnum(*it) || isspace(*it))
-          img_path += *it;
-      }
-    else
-      for (TagLib::String::Iterator it = title.begin(); it != title.end(); it++) {
-        if (isalnum(*it) || isspace(*it))
-          img_path += *it;
-      }
-
-    if (image_exist(&img_path)) {
-      record->Set(string("icon"), string(img_path.c_str()));
-    } else {
-      std::string extension = location.substr(location.length() - 3, 3);
-
-      if (extension == "mp3")
-        mp3Picture(location, img_path, record);
-      else if (extension == "m4a")
-        mp4Picture(location, img_path, record);
-    }
+    img_path.append(" - ");
   }
 
-  args.GetReturnValue().Set(record);
+  copy(album.length() ? album : title, &img_path);
+
+  if (image_exist(&img_path)) {
+    record->Set(string("icon"), string(img_path.c_str()));
+  } else {
+    std::string extension = location.substr(location.length() - 3, 3);
+
+    if (extension == "mp3")
+      mp3Picture(location, img_path, record);
+    else if (extension == "m4a")
+      mp4Picture(location, img_path, record);
+  }
 }
 
 void mp3Picture(std::string location, std::string img_path, Local<Object> record) {

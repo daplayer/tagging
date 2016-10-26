@@ -27,49 +27,75 @@ so don't expect it to automatically expand paths such as `../folder/audio.mp3`.
 
 ### Getting audio tags
 
-Reading audio tags is fairly easy, you just need to rely on the `get` method
-and pass it a path to an audio file, like:
+Reading audio tags is fairly easy but the returned result may not be what you
+would expect. Actually, the `get` method takes an array of files and will
+automatically build a representation of your library. For example:
 
 ~~~javascript
 const Tagging = require('daplayer-tagging');
 
-Tagging.get('/path/to/audio/file.mp3');
-
-// Will produce:
-
-{ title: 'Maliblue',
-  artist: 'Darius',
-  album: 'Velour',
-  genre: 'Electronic',
-  id: '/path/to/audio/file.mp3',
-  track: 4,
-  duration: 259 }
+Tagging.get([
+  '/path/to/artist/album/track.mp3',
+  '/path/to/artist/single.mp3',
+  '/path/to/lonely_single.mp3'
+]);
 ~~~
+
+Will produce:
+
+~~~javascript
+{
+  artists: {
+    darius: {
+      name: 'Darius',
+      albums: {
+        Velour: [
+          {
+            title: 'Maliblue',
+            artist: 'Darius',
+            genre: 'French House',
+            track: 4,
+            id: '/path/to/artist/album/track.mp3',
+            // ...
+          }
+        ]
+      },
+      singles: [0]
+    }
+  },
+  singles: [
+    { title: 'Pyor', artist: 'Darius', /* ... */ },
+    { title: 'Take Care of You', artist: 'Cherokee', /* ... */ }
+  ]
+}
+~~~
+
+Here is a couple things to keep in mind dealing with this result:
+
+* Each artist is stored under a key which is a lower-cased version of their
+  name. This avoids having two entries for the same artist if their musics
+  are tagged with a different case (e.g. "Bring Me *the* Horizon" and "Bring
+  Me *The* Horizon").
+* The `singles` key under an artist hash actually stores an array of indexes
+  that are mapped back to the root `singles` key. Singles attached to an artist
+  are handled this way to avoid extra allocations as DaPlayer handles singles
+  as a single collection but they can be attached to an artist.
 
 The `id` field actually refers to the given path; this is a cheap way to have
 an unique identifier for each record.
 
-It is also possible to get the cover image of an audio file passing a path to
-a folder which will contain it. Then the `icon` field of the returned object
-will be filled with the path to the picture.
+#### Getting cover arts
+
+It is also possible to get the cover arts of audio files passing a path to
+a folder which will contain the images. Then the `icon` attribute of each
+record will be filled automatically. For instance:
 
 ~~~javascript
-Tagging.get('/path/to/audio/file.mp3', '/path/to/cover/folder');
-
-// Will produce:
-
-{ title: 'Maliblue',
-  artist: 'Darius',
-  album: 'Velour',
-  genre: 'Electronic',
-  id: '/path/to/audio/file.mp3',
-  track: 4,
-  icon: '/path/to/cover/folder/Darius - Velour.jpg',
-  duration: 259 }
+Tagging.get(files, '/path/to/covers/folder');
 ~~~
 
-Actually the name of the file is based on the name of the artist and the album
-or if it is not present, the title.
+Actually the name of the image file is based on the name of the artist and the
+album's title or the track's title if the latter is not present.
 
 It is not possible to have access to any sort of Base64 string of the picture's
 data since this would take too much memory. You can fork this project and change
@@ -77,6 +103,18 @@ this behavior if storing cover files inside a folder is not what you want.
 
 The advantage of this technique is that once an audio file has been read once,
 the cover file won't be computed again so it will be faster to extract tags.
+
+#### Getting feedback
+
+Finally, the `get` method accepts a third argument as a callback to know the
+current progression processing all the given files as this may be long when
+the array gets large. For example:
+
+~~~javascript
+Tagging.get(files, cover_folder, function(index, total) {
+  console.log((index / total) * 100);
+});
+~~~
 
 ### Setting audio tags
 
