@@ -76,10 +76,9 @@ Here is a couple things to keep in mind dealing with this result:
   name. This avoids having two entries for the same artist if their musics
   are tagged with a different case (e.g. "Bring Me *the* Horizon" and "Bring
   Me *The* Horizon").
-* The `singles` key under an artist hash actually stores an array of indexes
-  that are mapped back to the root `singles` key. Singles attached to an artist
-  are handled this way to avoid extra allocations as DaPlayer handles singles
-  as a single collection but they can be attached to an artist.
+* The singles aren't directly attached to their artist as DaPlayer treats
+  singles as a single collection but you can `filter` the `singles` array
+  to properly attach them.
 
 The `id` field actually refers to the given path; this is a cheap way to have
 an unique identifier for each record.

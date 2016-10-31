@@ -24,7 +24,6 @@ void Library::AddArtist(std::string name) {
 
     hash->Set(string("name"), fullname);
     hash->Set(string("albums"), Nan::New<Object>());
-    hash->Set(string("singles"), Nan::New<Array>());
 
     artists()->Set(key, hash);
   }
@@ -52,23 +51,6 @@ void Library::AddTrack(std::string artist, std::string album, Local<Object> reco
 }
 
 void Library::AddSingle(std::string artist, Local<Object> record) {
-  Local<String> key = downcase(string(artist));
-
-  // If the record has an artist, we must first ensure that it
-  // is referenced and then push the index to the artist's singles
-  // array; we don't copy the record to save memory.
-  if (artist.length()) {
-
-    if (!artists()->Has(key))
-      AddArtist(artist);
-
-    Local<Object> artist_singles = artists()->Get(key)->ToObject()
-                                            ->Get(string("singles"))->ToObject();
-
-    artist_singles->Set(artist_singles->Get(string("length")),
-                        singles()->Get(string("length")));
-  }
-
   singles()->Set(singles()->Get(string("length")), record);
 }
 
