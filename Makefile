@@ -1,7 +1,8 @@
-all: test
+all: compile test
 
 compile:
 	node-gyp configure build --verbose
 
-test: compile
+.PHONY: test
+test:
 	mocha
