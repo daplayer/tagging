@@ -86,5 +86,48 @@ describe('Tagging', () => {
         assert.equal(tags.icon, helpers.fixture('covers/Bakermat - Strandfeest.jpg'));
       });
     });
+
+    describe('with a callback', () => {
+      it('should execute the given function each time a file has been processed', () => {
+        Tagging.get([helpers.fixture('without_cover.mp3')], '', (index, length) => {
+          assert.equal(index, 1);
+          assert.equal(length, 1);
+        });
+      });
+    });
+
+    describe('with an existing library', () => {
+      it('should keep the existing records', () => {
+        var library = {
+          artists: {
+            darius: {
+              name: 'Darius',
+              albums: { Velour: [{ title: 'Velour', artist: 'Darius'}]}
+            }
+          }
+        };
+
+        Tagging.get([helpers.fixture('tagged.mp3')], "", library);
+
+        var albums = library.artists.darius.albums;
+
+        assert.equal(albums.Velour.length, 2);
+        assert.equal(albums.Velour[1].title, 'Maliblue');
+      });
+    });
+
+    describe('with an existing library and a callback', () => {
+      it('should update the library and call the given function', () => {
+        var library = { artists: {}, singles: [{title: 'Pyor', artist: 'Darius'}]};
+
+        Tagging.get([helpers.fixture('without_cover.mp3')], '', library, (index, total) => {
+          assert.equal(index, 1);
+          assert.equal(total, 1);
+        });
+
+        assert.equal(library.singles.length, 2);
+        assert.equal(library.singles[1].title, 'Strandfeest');
+      })
+    });
   });
 });

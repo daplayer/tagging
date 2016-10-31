@@ -116,6 +116,30 @@ Tagging.get(files, cover_folder, function(index, total) {
 });
 ~~~
 
+#### Getting better performances
+
+Processing a huge folder may take several seconds so a good approach to save
+resources and time is to cache the returned hash once it has been processed
+(either in memory or on the file system).
+
+The problem is that the library isn't up-to-date when new files are introduced
+in the collection so the `get` method can take an extra argument to specify
+an existing hash. For instance:
+
+~~~javascript
+// The `library` variable doesn't get copied, it is barely modified.
+Tagging.get(new_files, cover_folder, library);
+
+// Or if you want to get some feedback processing the new files.
+Tagging.get(new_files, cover_folder, library, function(index, total) {
+  console.log("Already processed ", (index / total) * 100, "% of the new files.");
+});
+~~~
+
+Removing files from the library may be a bit more difficult. You need to look
+under the `singles` key, checking against the `id` field of each record or
+look inside each artist's album's tracks if the file is not a single.
+
 ### Setting audio tags
 
 You can also define audio tags through this library very easily with the `set`

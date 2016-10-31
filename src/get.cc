@@ -7,13 +7,26 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
     return Nan::ThrowRangeError("Wrong number of arguments");
 
   Local<Array> files = args[0]->ToObject().As<Array>();
-  Local<Function> callback;
+
+  Local<Object> callback = Nan::New<Object>(),
+                third_arg,
+                fourth_arg;
 
   const unsigned int files_count = files->Length();
 
-  Library library;
+  Library *library;
   std::string cover_folder;
 
+  // The different possible syntaxes are:
+  //
+  //   get(files);
+  //   get(files, cover_folder);
+  //   get(files, cover_folder, callback);
+  //   get(files, cover_folder, library);
+  //   get(files, cover_folder, library, callback);
+
+  // If a second argument is given, it means that a folder
+  // for storing cover arts has been passed.
   if (argc > 1) {
     Nan::Utf8String covers(args[1]);
     cover_folder = std::string(*covers);
@@ -21,8 +34,33 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
     cover_folder = "";
   }
 
-  if (argc > 2)
-    callback = args[2]->ToObject().As<Function>();
+  // If we have three arguments, it could either mean that
+  // a callback has been passed or that an existing hash
+  // representing a library has been passed.
+  //
+  // If we have less than three arguments, we should initialize
+  // the library anyway.
+  if (argc > 2) {
+    third_arg = args[2]->ToObject();
+
+    if (third_arg->IsFunction()) {
+      library  = new Library();
+      callback = third_arg.As<Function>();
+    } else {
+      library = new Library(third_arg);
+    }
+  } else {
+    library = new Library();
+  }
+
+  // If we have four arguments, it means that a callback has
+  // been passed for sure.
+  if (argc > 3) {
+    fourth_arg = args[3]->ToObject();
+
+    if (fourth_arg->IsFunction())
+      callback = fourth_arg.As<Function>();
+  }
 
   for (uint32_t i = 0; i < files_count; i++) {
     Nan::Utf8String name(files->Get(i));
@@ -33,16 +71,16 @@ void Get(const Nan::FunctionCallbackInfo<Value>& args) {
 
     tags(path, cover_folder, library);
 
-    if (argc > 2) {
+    if (callback->IsFunction()) {
       Local<Value> argv[2] = { Nan::New(i+1), Nan::New(files_count) };
       callback->CallAsFunction(callback, 2, argv);
     }
   }
 
-  args.GetReturnValue().Set(library.getHash());
+  args.GetReturnValue().Set(library->getHash());
 }
 
-void tags(std::string location, std::string cover_folder, Library library) {
+void tags(std::string location, std::string cover_folder, Library *library) {
   Local<Object> record = Nan::New<Object>();
 
   TagLib::FileRef f(location.c_str());
@@ -77,9 +115,9 @@ void tags(std::string location, std::string cover_folder, Library library) {
     extractPicture(location, cover_folder, title, album, artist, record);
 
   if (album.length())
-    library.AddTrack(artist.toCString(), album.toCString(), record);
+    library->AddTrack(artist.toCString(), album.toCString(), record);
   else
-    library.AddSingle(artist.toCString(), record);
+    library->AddSingle(artist.toCString(), record);
 }
 
 void inline extractPicture(std::string location,  std::string cover_folder,

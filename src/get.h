@@ -12,7 +12,7 @@ using v8::Function;
 
 void Get(const Nan::FunctionCallbackInfo<Value>& args);
 
-void tags(std::string location, std::string cover_folder, Library library);
+void tags(std::string location, std::string cover_folder, Library *library);
 
 void inline extractPicture(std::string location,  std::string cover_folder,
                            TagLib::String title,  TagLib::String album,

@@ -8,6 +8,7 @@ using v8::Array;
 class Library {
   public:
     Library();
+    Library(Local<Object> hash);
     Local<Object> getHash();
     void AddTrack(std::string artist, std::string album, Local<Object> record);
     void AddSingle(std::string artist, Local<Object> record);

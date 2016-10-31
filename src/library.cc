@@ -7,6 +7,10 @@ Library::Library() {
   internal_hash->Set(string("singles"), Nan::New<Array>());
 }
 
+Library::Library(Local<Object> hash) {
+  internal_hash = hash;
+}
+
 Local<Object> Library::getHash() {
   return internal_hash;
 }
