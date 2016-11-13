@@ -60,12 +60,12 @@ Will produce:
           }
         ]
       },
-      singles: [0]
+      singles: [{title: 'Pyor', /* ... */}]
     }
   },
   singles: [
     { title: 'Pyor', artist: 'Darius', /* ... */ },
-    { title: 'Take Care of You', artist: 'Cherokee', /* ... */ }
+    { title: 'Cherokee - Take Care of You', /* ... */ }
   ]
 }
 ~~~
@@ -76,9 +76,8 @@ Here is a couple things to keep in mind dealing with this result:
   name. This avoids having two entries for the same artist if their musics
   are tagged with a different case (e.g. "Bring Me *the* Horizon" and "Bring
   Me *The* Horizon").
-* The singles aren't directly attached to their artist as DaPlayer treats
-  singles as a single collection but you can `filter` the `singles` array
-  to properly attach them.
+* The singles are both attached to their artist and stored under the `singles`
+  key as DaPlayer treats singles as a single collection.
 
 The `id` field actually refers to the given path; this is a cheap way to have
 an unique identifier for each record.

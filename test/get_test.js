@@ -39,7 +39,8 @@ describe('Tagging', () => {
                   track: 4,
                   genre: 'Electronic'
                 }]
-              }
+              },
+              singles: []
             }
           },
           singles: []
