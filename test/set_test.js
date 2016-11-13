@@ -92,6 +92,12 @@ describe('Tagging', () => {
         }
       });
 
+      it('should not raise if an empty string is given as icon', () => {
+        Tagging.set(helpers.fixture('to_tag.mp3'), {
+          icon: ''
+        });
+      });
+
       it('should raise if the cover file does not exist', () => {
         assert.throws(() => {
           Tagging.set(helpers.fixture('to_tag.mp3'), {

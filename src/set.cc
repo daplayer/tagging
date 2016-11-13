@@ -36,6 +36,9 @@ void Set(const Nan::FunctionCallbackInfo<Value>& args) {
   if (hash->Has(string("icon"))) {
     std::string img_location = std::string(CString(hash, "icon"));
 
+    if (!img_location.length())
+      return;
+
     if (!exist(img_location)) {
       Nan::ThrowError("The given artwork path doesn't exist");
       return;
