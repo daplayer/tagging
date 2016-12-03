@@ -1,18 +1,53 @@
 #include "library.h"
+#include "get.h"
+
+void Library::Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target) {
+  v8::Local<FunctionTemplate> tpl = Nan::New<FunctionTemplate>(New);
+
+  tpl->InstanceTemplate()->SetInternalFieldCount(1);
+  tpl->SetClassName(string("Library"));
+
+  Nan::SetPrototypeMethod(tpl, "get", Get);
+
+  Library::constructor().Reset(Nan::GetFunction(tpl).ToLocalChecked());
+  Nan::Set(target, string("Library"), tpl->GetFunction());
+}
+
+void Library::NewInstance(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+  Local<Function> cons = Nan::New(Library::constructor());
+  args.GetReturnValue().Set(Nan::NewInstance(cons, 0, {}).ToLocalChecked());
+}
+
+void Library::New(const Nan::FunctionCallbackInfo<v8::Value>& args) {
+  if (args.IsConstructCall()) {
+    Library *library = new Library();
+    library->Wrap(args.This());
+
+    args.This()->Set(string("artists"), library->artists());
+    args.This()->Set(string("singles"), library->singles());
+
+    args.GetReturnValue().Set(args.This());
+  } else {
+    v8::Local<v8::Function> cons = Nan::New(Library::constructor());
+
+    args.GetReturnValue().Set(Nan::NewInstance(cons, 1, {}).ToLocalChecked());
+  }
+}
 
 Library::Library() {
-  internal_hash = Nan::New<Object>();
+  Local<Object> hash = Nan::New<Object>();
 
-  internal_hash->Set(string("artists"), Nan::New<Object>());
-  internal_hash->Set(string("singles"), Nan::New<Array>());
+  hash->Set(string("artists"), Nan::New<Object>());
+  hash->Set(string("singles"), Nan::New<Array>());
+
+  internal_hash.Reset(hash);
+}
+
+Library::~Library() {
 }
 
 Library::Library(Local<Object> hash) {
-  internal_hash = hash;
-}
-
-Local<Object> Library::getHash() {
-  return internal_hash;
+  internal_hash.Reset(hash);
 }
 
 void Library::AddArtist(std::string name) {
@@ -72,9 +107,73 @@ void Library::AddSingle(std::string artist, Local<Object> record) {
 }
 
 Local<Object> Library::artists() {
-  return internal_hash->Get(string("artists"))->ToObject();
+  Local<Object> hash = Nan::New(internal_hash);
+
+  return hash->Get(string("artists"))->ToObject();
 }
 
 Local<Object> Library::singles() {
-  return internal_hash->Get(string("singles"))->ToObject();
+  Local<Object> hash = Nan::New(internal_hash);
+
+  return hash->Get(string("singles"))->ToObject();
+}
+
+void Library::Get(const Nan::FunctionCallbackInfo<Value>& args) {
+  const unsigned int argc = args.Length();
+
+  Library *library = Nan::ObjectWrap::Unwrap<Library>(args.This());
+
+  if (argc == 0)
+    return Nan::ThrowRangeError("Wrong number of arguments");
+
+  Local<Array>  files    = args[0]->ToObject().As<Array>();
+  Local<Object> callback = Nan::New<Object>(), second_arg, third_arg;
+
+  const unsigned int files_count = files->Length();
+
+  std::string cover_folder;
+
+  // The different possible syntaxes are:
+  //
+  //   get(files);
+  //   get(files, callback);
+  //   get(files, cover_folder);
+  //   get(files, cover_folder, callback);
+
+  // If we have two arguments, it could either mean that
+  // a callback has been passed or that a folder containing
+  // cover arts has been given.
+  if (argc == 2) {
+    second_arg = args[1]->ToObject();
+
+    if (second_arg->IsFunction()) {
+      callback = second_arg.As<Function>();
+      cover_folder = "";
+    } else {
+      Nan::Utf8String covers(args[1]);
+      cover_folder = std::string(*covers);
+    }
+  } else if (argc == 3) {
+    Nan::Utf8String covers(args[1]);
+
+    cover_folder = std::string(*covers);
+    callback     = args[2]->ToObject().As<Function>();
+  }
+
+  for (uint32_t i = 0; i < files_count; i++) {
+    Nan::Utf8String name(files->Get(i));
+    std::string path = std::string(*name);
+
+    if (!exist(path))
+      return Nan::ThrowError("The audio file doesn't exist");
+
+    tags(path, cover_folder, library);
+
+    if (callback->IsFunction()) {
+      Local<Value> argv[2] = { Nan::New(i+1), Nan::New(files_count) };
+      callback->CallAsFunction(callback, 2, argv);
+    }
+  }
+
+  args.GetReturnValue().Set(true);
 }

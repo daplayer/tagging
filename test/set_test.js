@@ -52,7 +52,10 @@ describe('Tagging', () => {
 
         Tagging.set(helpers.fixture('to_tag.mp3'), defined_tags);
 
-        var library   = Tagging.get([helpers.fixture('to_tag.mp3')]);
+        var library = new Tagging.Library();
+
+        library.get([helpers.fixture('to_tag.mp3')]);
+
         var read_tags = library.artists.cherokee.albums['Take Care of You'][0];
 
         assert.equal(read_tags.title,  defined_tags.title);
@@ -75,13 +78,15 @@ describe('Tagging', () => {
       });
 
       it('should pick the given cover file', () => {
+        var library = new Tagging.Library();
+
         Tagging.set('test/fixtures/to_tag.mp3', {
           title: 'Take Care of You',
           artist: 'Cherokee',
           icon: helpers.fixture('cover.jpg')
         });
 
-        Tagging.get([helpers.fixture('to_tag.mp3')], cover_folder);
+        library.get([helpers.fixture('to_tag.mp3')], cover_folder);
 
         try {
           fs.accessSync(helpers.fixture('covers/Cherokee - Take Care of You.jpg'));

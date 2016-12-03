@@ -1,17 +1,21 @@
 require('./test_helper');
 
-describe('Tagging', () => {
+describe('Library', () => {
+  beforeEach(() => {
+    this.library = new Tagging.Library();
+  });
+
   describe('#get', () => {
     describe('prototype', () => {
       it('should accept absolute paths', () => {
         assert.doesNotThrow(() => {
-          Tagging.get([path.join(__dirname, 'fixtures/tagged.mp3')]);
+          this.library.get([path.join(__dirname, 'fixtures/tagged.mp3')]);
         });
       });
 
       it('should take at least one argument', () => {
         assert.throws(() => {
-          Tagging.get();
+          this.library.get();
         }, /Wrong number of arguments/);
       });
     });
@@ -19,36 +23,37 @@ describe('Tagging', () => {
     describe('behavior', () => {
       it('should raise if the audio file does not exist', () => {
         assert.throws(() => {
-          Tagging.get(['dummy/path']);
+          this.library.get(['dummy/path']);
         }, /The audio file doesn't exist/);
       });
 
-      it('should properly return the representation of the library', () => {
-        var tags = Tagging.get([helpers.fixture('tagged.mp3')]);
+      it('should properly update the library fields', () => {
+        var file_path = helpers.fixture('tagged.mp3');
 
-        assert.deepEqual(tags, {
-          artists: {
-            darius: {
-              name: 'Darius',
-              albums: {
-                Velour: [{
-                  artist: 'Darius',
-                  duration: 259,
-                  id: helpers.fixture('tagged.mp3'),
-                  title: 'Maliblue',
-                  track: 4,
-                  genre: 'Electronic'
-                }]
-              },
+        this.library.get([file_path]);
+
+        assert.deepEqual(this.library.artists, {
+          darius: {
+            name: 'Darius',
+            albums: {
+              Velour: [{
+                artist:   'Darius',
+                duration: 259,
+                id:       file_path,
+                title:    'Maliblue',
+                track:    4,
+                genre:    'Electronic'
+              }]
+            },
               singles: []
             }
-          },
-          singles: []
         });
       });
 
       it('should set the title based on the file name', () => {
-        var tags = Tagging.get([helpers.fixture('raw.mp3')]).singles[0];
+        this.library.get([helpers.fixture('raw.mp3')])
+
+        var tags = this.library.singles[0];
 
         assert.equal(tags.title, 'raw');
       });
@@ -63,10 +68,10 @@ describe('Tagging', () => {
         helpers.clearCoverFolder();
       });
 
-      it('should be named based on the name of the artist and of the album', () => {
+      it('should be named based on the name of the artist and album', () => {
         var cover_file = helpers.fixture('covers/Darius - Velour.jpg');
 
-        Tagging.get([helpers.fixture('tagged.mp3')], cover_folder);
+        this.library.get([helpers.fixture('tagged.mp3')], cover_folder);
 
         assert(fs.lstatSync(cover_file).isFile());
       });
@@ -75,13 +80,15 @@ describe('Tagging', () => {
         var cover_file = helpers.fixture('covers/Darius - Velour.jpg');
 
         fs.appendFileSync(cover_file, 'i am a cover lulz', 'utf-8');
-        Tagging.get([helpers.fixture('tagged.mp3')], cover_folder);
+        this.library.get([helpers.fixture('tagged.mp3')], cover_folder);
 
         assert.equal(fs.readFileSync(cover_file, 'utf-8'), 'i am a cover lulz');
       });
 
       it('should pick the cover file even if there is no picture frame', () => {
-        var tags = Tagging.get([helpers.fixture('without_cover.mp3')], cover_folder).singles[0];
+        this.library.get([helpers.fixture('without_cover.mp3')], cover_folder);
+
+        var tags = this.library.singles[0];
 
         assert.equal(tags.icon, helpers.fixture('covers/Bakermat - Strandfeest.jpg'));
       });
@@ -89,7 +96,7 @@ describe('Tagging', () => {
 
     describe('with a callback', () => {
       it('should execute the given function each time a file has been processed', () => {
-        Tagging.get([helpers.fixture('without_cover.mp3')], '', (index, length) => {
+        this.library.get([helpers.fixture('without_cover.mp3')], '', (index, length) => {
           assert.equal(index, 1);
           assert.equal(length, 1);
         });
@@ -98,35 +105,30 @@ describe('Tagging', () => {
 
     describe('with an existing library', () => {
       it('should keep the existing records', () => {
-        var library = {
-          artists: {
-            darius: {
-              name: 'Darius',
-              albums: { Velour: [{ title: 'Velour', artist: 'Darius'}]}
-            }
-          }
-        };
+        var artists;
 
-        Tagging.get([helpers.fixture('tagged.mp3')], "", library);
+        this.library.get([helpers.fixture('tagged.mp3')])
 
-        var albums = library.artists.darius.albums;
+        artists = Object.keys(this.library.artists);
+        assert.equal(artists.length, 1);
 
-        assert.equal(albums.Velour.length, 2);
-        assert.equal(albums.Velour[1].title, 'Maliblue');
+        this.library.get([helpers.fixture('without_cover.mp3')]);
+
+        artists = Object.keys(this.library.artists);
+        assert.equal(artists.length, 2);
       });
     });
 
     describe('with an existing library and a callback', () => {
       it('should update the library and call the given function', () => {
-        var library = { artists: {}, singles: [{title: 'Pyor', artist: 'Darius'}]};
-
-        Tagging.get([helpers.fixture('without_cover.mp3')], '', library, (index, total) => {
+        this.library.get([helpers.fixture('tagged.mp3')]);
+        this.library.get([helpers.fixture('without_cover.mp3')], (index, total) => {
           assert.equal(index, 1);
           assert.equal(total, 1);
         });
 
-        assert.equal(library.singles.length, 2);
-        assert.equal(library.singles[1].title, 'Strandfeest');
+        assert.equal(this.library.singles.length, 1);
+        assert.equal(this.library.singles[0].title, 'Strandfeest');
       })
     });
   });

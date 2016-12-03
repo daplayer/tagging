@@ -4,20 +4,38 @@
 #include "utils.h"
 
 using v8::Array;
+using v8::FunctionTemplate;
+using v8::Persistent;
+using v8::Function;
+using v8::Context;
 
-class Library {
+class Library : public Nan::ObjectWrap {
   public:
-    Library();
-    Library(Local<Object> hash);
-    Local<Object> getHash();
+    explicit Library();
+    explicit Library(Local<Object> hash);
+
     void AddTrack(std::string artist, std::string album, Local<Object> record);
     void AddSingle(std::string artist, Local<Object> record);
 
+    static void Initialize(Nan::ADDON_REGISTER_FUNCTION_ARGS_TYPE target);
+    static void NewInstance(const Nan::FunctionCallbackInfo<Value>& args);
+
+    static inline Nan::Persistent<Function> & constructor() {
+      static Nan::Persistent<Function> my_constructor;
+      return my_constructor;
+    }
+
   private:
-    Local<Object> internal_hash;
+    Nan::Persistent<Object> internal_hash;
     Local<Object> artists();
     Local<Object> singles();
+
     void AddArtist(std::string name);
+
+    ~Library();
+
+    static void New(const Nan::FunctionCallbackInfo<Value>& args);
+    static void Get(const Nan::FunctionCallbackInfo<Value>& args);
 };
 
 #endif
