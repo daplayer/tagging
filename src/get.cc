@@ -24,9 +24,9 @@ void tags(std::string location, std::string cover_folder, Library *library) {
       title += *it;
   }
 
-  record->Set(string("title"),    string(title.toCString()));
-  record->Set(string("artist"),   string(artist.toCString()));
-  record->Set(string("genre"),    string(genre.toCString()));
+  record->Set(string("title"),    string(title.toCString(true)));
+  record->Set(string("artist"),   string(artist.toCString(true)));
+  record->Set(string("genre"),    string(genre.toCString(true)));
   record->Set(string("id"),       string(location));
   record->Set(string("track"),    Nan::New(tag->track()));
   record->Set(string("duration"), Nan::New(properties->length()));
@@ -35,9 +35,9 @@ void tags(std::string location, std::string cover_folder, Library *library) {
     extractPicture(location, cover_folder, title, album, artist, record);
 
   if (album.length())
-    library->AddTrack(artist.toCString(), album.toCString(), record);
+    library->AddTrack(artist.toCString(true), album.toCString(true), record);
   else
-    library->AddSingle(artist.toCString(), record);
+    library->AddSingle(artist.toCString(true), record);
 }
 
 void inline extractPicture(std::string location,  std::string cover_folder,
