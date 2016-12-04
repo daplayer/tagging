@@ -118,6 +118,21 @@ library.get(files, function(index, total) {
 });
 ~~~
 
+#### Getting better performances
+
+Since reading huge folders may take time, you should rather cache the library
+somewhere to avoid reprocessing files each time. If you still hold a reference
+to the library in memory, it's totally fine to do several `get` calls but
+if you are loading the library from a JSON file for instance, you can instantiate
+a library from a hash like this:
+
+~~~javascript
+var library = new Tagging.Library({
+  artists: { /* */ },
+  singles: [ /* */ ]
+});
+~~~
+
 ### Setting audio tags
 
 You can also define audio tags through this library very easily with the `set`

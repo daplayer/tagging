@@ -14,6 +14,9 @@ class Library : public Nan::ObjectWrap {
     explicit Library();
     explicit Library(Local<Object> hash);
 
+    void setArtists(Local<Object> object);
+    void setSingles(Local<Object> array);
+
     void AddTrack(std::string artist, std::string album, Local<Object> record);
     void AddSingle(std::string artist, Local<Object> record);
 

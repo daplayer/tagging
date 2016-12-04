@@ -23,6 +23,13 @@ void Library::New(const Nan::FunctionCallbackInfo<v8::Value>& args) {
     Library *library = new Library();
     library->Wrap(args.This());
 
+    if (args.Length() == 1) {
+      Local<Object> hash = args[0]->ToObject();
+
+      library->setArtists(hash->Get(string("artists"))->ToObject());
+      library->setSingles(hash->Get(string("singles"))->ToObject());
+    }
+
     args.This()->Set(string("artists"), library->artists());
     args.This()->Set(string("singles"), library->singles());
 
@@ -116,6 +123,18 @@ Local<Object> Library::singles() {
   Local<Object> hash = Nan::New(internal_hash);
 
   return hash->Get(string("singles"))->ToObject();
+}
+
+void Library::setArtists(Local<Object> object) {
+  Local<Object> hash = Nan::New(internal_hash);
+
+  hash->Set(string("artists"), object);
+}
+
+void Library::setSingles(Local<Object> array) {
+  Local<Object> hash = Nan::New(internal_hash);
+
+  hash->Set(string("singles"), array);
 }
 
 void Library::Get(const Nan::FunctionCallbackInfo<Value>& args) {
