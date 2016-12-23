@@ -14,7 +14,7 @@ it out locally or reference a GitHub URL like a branch or a tar-ball:
 }
 ~~~
 
-Then run `npm install` to download it.
+Then run `yarn install` to download it.
 
 ## Usage
 
@@ -137,7 +137,7 @@ var library = new Tagging.Library({
 
 If you are watching for changes inside a folder or you've cached the library and
 you want to remove elements from it, it ships with a `remove` method that takes
-an array of files to remove and will remove any occurrence of the file inside
+an array of files to remove and will remove every occurrences of the files inside
 singles and albums:
 
 ~~~javascript
@@ -175,15 +175,17 @@ Contributing to this project is fairly easy. To set it up, you are done with the
 following steps:
 
 ~~~
-$ git clone https://github.com/daplayer/tagging
+$ git clone https://github.com/daplayer/tagging daplayer-tagging
 $ cd daplayer-tagging
-$ npm install
+$ yarn install
 $ make
 ~~~
 
 `make` will actually compile the project and run all the tests.
 
 ## License
+
+Copyright (c) 2016, Robin Dupret
 
 This project is a wrapper around the [TagLib](http://taglib.github.io) library which
 is available either under the terms of the LGPL or the MPL license.
