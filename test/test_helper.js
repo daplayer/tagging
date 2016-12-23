@@ -1,4 +1,4 @@
-global.Tagging = require('../build/Release/tagging.node');
+global.Tagging = require('../lib/daplayer-tagging.js');
 global.assert  = require('assert');
 global.path    = require('path');
 global.fs      = require('fs');

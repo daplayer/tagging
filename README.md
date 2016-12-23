@@ -133,6 +133,20 @@ var library = new Tagging.Library({
 });
 ~~~
 
+### Removing elements
+
+If you are watching for changes inside a folder or you've cached the library and
+you want to remove elements from it, it ships with a `remove` method that takes
+an array of files to remove and will remove any occurrence of the file inside
+singles and albums:
+
+~~~javascript
+library.remove([
+  '/path/to/file.mp3',
+  '/path/to/file2.mp3'
+]);
+~~~
+
 ### Setting audio tags
 
 You can also define audio tags through this library very easily with the `set`
