@@ -26,7 +26,11 @@ Local<String> string(std::string stdstring);
 
 Local<String> downcase(Local<String> original);
 
+char* CString(Local<Value> string);
+
 char* CString(Local<Object> hash, const char* key);
+
+TagLib::String TString(Local<Object> hash, const char* key);
 
 bool exist(std::string given_path);
 

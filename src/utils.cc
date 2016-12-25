@@ -21,6 +21,10 @@ char* CString(Local<Object> hash, const char* key) {
   return CString(hash->Get(string(key)));
 }
 
+TagLib::String TString(Local<Object> hash, const char *key) {
+  return TagLib::String(CString(hash, key), TagLib::String::UTF8);
+}
+
 bool exist(const char* given_path) {
   struct stat buffer;
 

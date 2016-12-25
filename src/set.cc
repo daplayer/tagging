@@ -20,13 +20,13 @@ void Set(const Nan::FunctionCallbackInfo<Value>& args) {
 
   // Set the basic text attributes like title, etc.
   if (hash->Has(string("title")))
-    audioFile.tag()->setTitle(CString(hash, "title"));
+    audioFile.tag()->setTitle(TString(hash, "title"));
   if (hash->Has(string("album")))
-    audioFile.tag()->setAlbum(CString(hash, "album"));
+    audioFile.tag()->setAlbum(TString(hash, "album"));
   if (hash->Has(string("artist")))
-    audioFile.tag()->setArtist(CString(hash, "artist"));
+    audioFile.tag()->setArtist(TString(hash, "artist"));
   if (hash->Has(string("genre")))
-    audioFile.tag()->setGenre(CString(hash, "genre"));
+    audioFile.tag()->setGenre(TString(hash, "genre"));
   if (hash->Has(string("track")))
     audioFile.tag()->setTrack(hash->Get(string("track"))->NumberValue());
 
