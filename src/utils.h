@@ -1,6 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <unistd.h>
@@ -33,9 +34,5 @@ char* CString(Local<Object> hash, const char* key);
 TagLib::String TString(Local<Object> hash, const char* key);
 
 bool exist(std::string given_path);
-
-bool image_exist(std::string *given_path);
-
-void copy(TagLib::String str, std::string *dest);
 
 #endif

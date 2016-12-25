@@ -37,33 +37,3 @@ bool exist(const char* given_path) {
 bool exist(std::string given_path) {
   return exist(given_path.c_str());
 }
-
-bool image_exist(std::string *given_path) {
-  std::string png_path, jpg_path;
-
-  png_path.reserve(given_path->length() + 4);
-  jpg_path.reserve(given_path->length() + 4);
-
-  png_path.append(*given_path);
-  png_path.append(".png");
-
-  jpg_path.append(*given_path);
-  jpg_path.append(".jpg");
-
-  if (exist(png_path)) {
-    given_path->append(".png");
-    return true;
-  } else if (exist(jpg_path)) {
-    given_path->append(".jpg");
-    return true;
-  }
-
-  return false;
-}
-
-void copy(TagLib::String str, std::string *dest) {
-  for (TagLib::String::Iterator it = str.begin(); it != str.end(); it++) {
-    if (isalnum(*it) || isspace(*it))
-      *dest += *it;
-  }
-}

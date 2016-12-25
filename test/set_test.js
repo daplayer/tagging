@@ -89,7 +89,7 @@ describe('Tagging', () => {
         library.get([helpers.fixture('to_tag.mp3')], cover_folder);
 
         try {
-          fs.accessSync(helpers.fixture('covers/Cherokee - Take Care of You.jpg'));
+          fs.accessSync(helpers.fixture('covers/227514130.jpg'));
         } catch (e) {
           throw new assert.AssertionError({
             message: 'The cover file should exist'

@@ -1,6 +1,8 @@
 #ifndef EXTRACT_H
 #define EXTRACT_H
 
+#include <sstream>
+
 #include "utils.h"
 #include "library.h"
 
@@ -18,8 +20,8 @@ void inline extractPicture(std::string location,  std::string cover_folder,
                            TagLib::String title,  TagLib::String album,
                            TagLib::String artist, Local<Object> record);
 
-void mp3Picture(std::string location, std::string img_path, Local<Object> record);
+void mp3Picture(std::string location, std::string cover_folder, Local<Object> record);
 
-void mp4Picture(std::string location, std::string img_path, Local<Object> record);
+void mp4Picture(std::string location, std::string cover_folder, Local<Object> record);
 
 #endif

@@ -69,7 +69,7 @@ describe('Library', () => {
       });
 
       it('should be named based on the name of the artist and album', () => {
-        var cover_file = helpers.fixture('covers/Darius - Velour.jpg');
+        var cover_file = helpers.fixture('covers/2087182743.jpg');
 
         this.library.get([helpers.fixture('tagged.mp3')], cover_folder);
 
@@ -77,20 +77,12 @@ describe('Library', () => {
       });
 
       it('should not regenerate the artwork if it already exists', () => {
-        var cover_file = helpers.fixture('covers/Darius - Velour.jpg');
+        var cover_file = helpers.fixture('covers/2087182743.jpg');
 
         fs.appendFileSync(cover_file, 'i am a cover lulz', 'utf-8');
         this.library.get([helpers.fixture('tagged.mp3')], cover_folder);
 
         assert.equal(fs.readFileSync(cover_file, 'utf-8'), 'i am a cover lulz');
-      });
-
-      it('should pick the cover file even if there is no picture frame', () => {
-        this.library.get([helpers.fixture('without_cover.mp3')], cover_folder);
-
-        var tags = this.library.singles[0];
-
-        assert.equal(tags.icon, helpers.fixture('covers/Bakermat - Strandfeest.jpg'));
       });
     });
 

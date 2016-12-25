@@ -43,42 +43,15 @@ void tags(std::string location, std::string cover_folder, Library *library) {
 void inline extractPicture(std::string location,  std::string cover_folder,
                            TagLib::String title,  TagLib::String album,
                            TagLib::String artist, Local<Object> record) {
-  //   1 ('/')
-  // + 3 (" - ")
-  // + 1 ('.')
-  // + 3 ("png" or "jpg")
-  // + 1 ('\0')
-  // = 9
-  std::string img_path;
-  img_path.reserve(cover_folder.length() + artist.length() + 9 +
-                   album.length() ? album.length() : title.length());
+  std::string extension = location.substr(location.length() - 3, 3);
 
-  img_path.append(cover_folder);
-  img_path += '/';
-
-  // Copy the artist, the album (or the title if not present)
-  // stripping out non alpha-numeric characters.
-  if (artist.length()) {
-    copy(artist, &img_path);
-
-    img_path.append(" - ");
-  }
-
-  copy(album.length() ? album : title, &img_path);
-
-  if (image_exist(&img_path)) {
-    record->Set(string("icon"), string(img_path.c_str()));
-  } else {
-    std::string extension = location.substr(location.length() - 3, 3);
-
-    if (extension == "mp3")
-      mp3Picture(location, img_path, record);
-    else if (extension == "m4a")
-      mp4Picture(location, img_path, record);
-  }
+  if (extension == "mp3")
+    mp3Picture(location, cover_folder, record);
+  else if (extension == "m4a")
+    mp4Picture(location, cover_folder, record);
 }
 
-void mp3Picture(std::string location, std::string img_path, Local<Object> record) {
+void mp3Picture(std::string location, std::string cover_folder, Local<Object> record) {
   TagLib::MPEG::File mp3_file(location.c_str());
   TagLib::ID3v2::Tag *mp3_tag = mp3_file.ID3v2Tag(true);
   TagLib::ID3v2::FrameList pictures = mp3_tag->frameList("APIC");
@@ -86,30 +59,36 @@ void mp3Picture(std::string location, std::string img_path, Local<Object> record
   if (pictures.isEmpty())
     return;
 
-  TagLib::ID3v2::AttachedPictureFrame *picture_frame;
+  TagLib::ID3v2::AttachedPictureFrame *picture_frame = static_cast<TagLib::ID3v2::AttachedPictureFrame *> (*pictures.begin());;
 
-  for (TagLib::ID3v2::FrameList::ConstIterator it = pictures.begin(); it != pictures.end(); it++) {
-    picture_frame = static_cast<TagLib::ID3v2::AttachedPictureFrame *> (*it);
+  unsigned int checksum = picture_frame->picture().checksum();
 
-    if (picture_frame->mimeType() == "image/png")
-      img_path.append(".png");
-    else
-      img_path.append(".jpg");
+  std::stringstream path_stream;
 
-    if (!exist(img_path)) {
-      size_t image_size = picture_frame->picture().size();
-      const char *data  = picture_frame->picture().data();
-      FILE *cover_file  = fopen(img_path.c_str(), "wb");
+  path_stream << cover_folder;
+  path_stream << "/";
+  path_stream << checksum;
 
-      fwrite(data, image_size, 1, cover_file);
-      fclose(cover_file);
-    }
+  std::string img_path = path_stream.str();
 
-    record->Set(string("icon"), string(img_path));
+  if (picture_frame->mimeType() == "image/png")
+    img_path.append(".png");
+  else
+    img_path.append(".jpg");
+
+  if (!exist(img_path)) {
+    size_t image_size = picture_frame->picture().size();
+    const char *data  = picture_frame->picture().data();
+    FILE *cover_file  = fopen(img_path.c_str(), "wb");
+
+    fwrite(data, image_size, 1, cover_file);
+    fclose(cover_file);
   }
+
+  record->Set(string("icon"), string(img_path));
 }
 
-void mp4Picture(std::string location, std::string img_path, Local<Object> record) {
+void mp4Picture(std::string location, std::string cover_folder, Local<Object> record) {
   TagLib::MP4::File mp4_file(location.c_str());
   TagLib::MP4::Tag *mp4_tag = mp4_file.tag();
 
@@ -122,6 +101,16 @@ void mp4Picture(std::string location, std::string img_path, Local<Object> record
     return;
 
   TagLib::MP4::CoverArt cover_art = covert_art_list[0];
+
+  unsigned int checksum = cover_art.data().checksum();
+
+  std::stringstream path_stream;
+
+  path_stream << cover_folder;
+  path_stream << "/";
+  path_stream << checksum;
+
+  std::string img_path = path_stream.str();
 
   img_path.append(".jpg");
 
