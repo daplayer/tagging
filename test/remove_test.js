@@ -11,6 +11,10 @@ describe('Library', () => {
               {id: 'Dans Tes Yeux'},
             ]},
             singles: [{id: 'Pyor'}]
+          },
+          johnny: {
+            albums: {},
+            singles: []
           }
         },
         singles: [{id: 'Strandfeest'}, {id: 'Pyor'}]
@@ -49,6 +53,12 @@ describe('Library', () => {
       this.library.remove(['Road Trip', 'Dans Tes Yeux']);
 
       assert.equal(this.library.artists.darius.albums.Velour, undefined);
+    });
+
+    it('should remove empty artists', () => {
+      this.library.remove(['foo']);
+
+      assert.equal(this.library.artists.johnny, undefined);
     });
   });
 });
