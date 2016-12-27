@@ -48,7 +48,13 @@ void Set(const Nan::FunctionCallbackInfo<Value>& args) {
     TagLib::MPEG::File mpegFile(location.c_str());
 
     TagLib::ID3v2::Tag *tag = mpegFile.ID3v2Tag(true);
-    TagLib::ID3v2::AttachedPictureFrame *frame = new TagLib::ID3v2::AttachedPictureFrame;
+    TagLib::ID3v2::FrameList pictures = tag->frameList("APIC");
+    TagLib::ID3v2::AttachedPictureFrame *frame;
+
+    if (pictures.isEmpty())
+      frame = new TagLib::ID3v2::AttachedPictureFrame;
+    else
+      frame = static_cast<TagLib::ID3v2::AttachedPictureFrame *> (*pictures.begin());
 
     if (extension == "png")
       frame->setMimeType("image/png");
@@ -57,7 +63,8 @@ void Set(const Nan::FunctionCallbackInfo<Value>& args) {
 
     frame->setPicture(imageFile.data());
 
-    tag->addFrame(frame);
+    if (pictures.isEmpty())
+      tag->addFrame(frame);
 
     mpegFile.save();
   }
