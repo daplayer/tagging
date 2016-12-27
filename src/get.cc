@@ -59,7 +59,7 @@ void mp3Picture(std::string location, std::string cover_folder, Local<Object> re
   if (pictures.isEmpty())
     return;
 
-  TagLib::ID3v2::AttachedPictureFrame *picture_frame = static_cast<TagLib::ID3v2::AttachedPictureFrame *> (*pictures.begin());;
+  TagLib::ID3v2::AttachedPictureFrame *picture_frame = static_cast<TagLib::ID3v2::AttachedPictureFrame *> (*pictures.begin());
 
   unsigned int checksum = picture_frame->picture().checksum();
 
