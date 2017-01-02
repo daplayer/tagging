@@ -96,15 +96,11 @@ record will be filled automatically. For instance:
 library.get(files, '/path/to/covers/folder');
 ~~~
 
-Actually the name of the image file is based on the name of the artist and the
-album's title or the track's title if the latter is not present.
+Actually the name of the image file is a CRC checksum of the image's data.
 
 It is not possible to have access to any sort of Base64 string of the picture's
 data since this would take too much memory. You can fork this project and change
 this behavior if storing cover files inside a folder is not what you want.
-
-The advantage of this technique is that once an audio file has been read once,
-the cover file won't be computed again so it will be faster to extract tags.
 
 #### Getting feedback
 
@@ -185,7 +181,7 @@ $ make
 
 ## License
 
-Copyright (c) 2016, Robin Dupret
+Copyright (c) 2016-2017, Robin Dupret
 
 This project is a wrapper around the [TagLib](http://taglib.github.io) library which
 is available either under the terms of the LGPL or the MPL license.
